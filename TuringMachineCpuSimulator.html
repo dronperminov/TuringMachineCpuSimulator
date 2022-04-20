@@ -20,24 +20,25 @@
         <div class="code">
             <div class="header">Программа на ассемблере</div>
             <div class="code-area">
-            <div class="code-input" id="code-box" contenteditable="true">.loop:
-    XOR B A
-    NOT B
+            <div class="code-input" id="code-box" contenteditable="true">JMP start
+
+.loop:
+    MOV D B
+    ADD B C
+    MOV C D
     DEC A
     JNZ .loop
 
-    XOR A B
     JMP end
 
 start:
     MOV A 00001001
     INC B
-    XOR B A
+    INC C
     JMP .loop
 
 end:
     OR C A
-    XOR B C
     </div>
                 <div class="code-buttons">
                     <input type="submit" class="button" value="Компилировать", onclick="simulator.CompileProgram()">

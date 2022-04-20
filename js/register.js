@@ -13,7 +13,7 @@ Register.prototype.InitBlock = function(block) {
 
 Register.prototype.SetValue = function(value) {
     this.value = value
-    this.block.innerHTML = `${this.name}: ${this.value}`
+    this.block.innerHTML = `${this.name}: ${this.value} (${Number.parseInt(this.value, 2)})`
 }
 
 Register.prototype.GetValue = function() {

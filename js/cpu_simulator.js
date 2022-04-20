@@ -60,6 +60,7 @@ CpuSimulator.prototype.CompileProgram = function() {
     let text = this.ClearText(codeBox.innerHTML)
     let lines = text.split('\n')
 
+    this.programIndex = 0
     this.program = []
     this.htmlLines = []
     this.labels = {}
@@ -85,8 +86,6 @@ CpuSimulator.prototype.CompileProgram = function() {
             this.program.push({ line: line, block: div })
         }
     }
-
-    this.programIndex = START_LABEL in this.labels ? this.labels[START_LABEL] : 0
 }
 
 CpuSimulator.prototype.InitButtons = function() {
@@ -224,7 +223,7 @@ CpuSimulator.prototype.Reset = function() {
 
     this.HideAllLines()
 
-    this.programIndex = START_LABEL in this.labels ? this.labels[START_LABEL] : 0
+    this.programIndex = 0
     this.isTuringRun = false
     this.onTuringEnd = null
     this.commandMachine.Clear()

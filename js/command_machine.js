@@ -44,6 +44,6 @@ commandMachine.AddState("ADD", {'0': "R", '1': "R", '': ',L,ADD-check', 'I': "R"
 commandMachine.AddState("ADD-zero", {'0': "L", '1': "L", '#': '#,L,ADD-zero2', })
 commandMachine.AddState("ADD-one", {'0': "L", '1': "L", '#': '#,L,ADD-one2', })
 commandMachine.AddState("ADD-zero2", {'0': 'O,N,ADD', '1': 'I,N,ADD', 'I': "L", '': 'O,N,ADD', 'O': "L"})
-commandMachine.AddState("ADD-one2", {'0': 'I,L,ADD', '1': 'O,L,ADD-one3', 'I': "L", '': 'I,R,ADD', 'O': "L"})
-commandMachine.AddState("ADD-one3", {'0': '1,L,ADD', '1': '0,L,ADD-one3', '': '1,R,ADD'})
+commandMachine.AddState("ADD-one2", {'0': 'I,N,ADD', '1': 'O,L,ADD-one3', 'I': "L", '': 'I,R,ADD', 'O': "L"})
+commandMachine.AddState("ADD-one3", {'0': '1,N,ADD', '1': '0,L,ADD-one3', '': '1,R,ADD'})
 commandMachine.AddState("ADD-check", {'0': ',L,ADD-zero', '1': ',L,ADD-one', '#': ',L,normalize', })
