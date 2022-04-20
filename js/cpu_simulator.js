@@ -1,3 +1,5 @@
+const START_LABEL = 'start'
+
 const ZERO_FLAG = 'Z'
 const CARRY_FLAG = 'C'
 
@@ -10,6 +12,12 @@ const AND_CMD = 'AND'
 const OR_CMD = 'OR'
 const XOR_CMD = 'XOR'
 const NOT_CMD = 'NOT'
+
+const MOV_CMD = 'MOV'
+
+const JMP_CMD = 'JMP'
+const JZ_CMD = 'JZ'
+const JNZ_CMD = 'JNZ'
 
 function CpuSimulator(commandMachine, n_bits = 8) {
     this.commandMachine = commandMachine
@@ -40,6 +48,13 @@ CpuSimulator.prototype.ClearText = function(text) {
     return text
 }
 
+CpuSimulator.prototype.RemoveComments = function(line) {
+    line = line.replace(/;.*/gi, "")
+    line = line.replace(/^ +/gi, "")
+    line = line.replace(/ +$/gi, "")
+    return line
+}
+
 CpuSimulator.prototype.CompileProgram = function() {
     let codeBox = document.getElementById('code-box')
     let text = this.ClearText(codeBox.innerHTML)
@@ -47,19 +62,31 @@ CpuSimulator.prototype.CompileProgram = function() {
 
     this.program = []
     this.htmlLines = []
-    this.programIndex = 0
+    this.labels = {}
 
     codeBox.innerHTML = ''
 
     for (let i = 0; i < lines.length; i++) {
+        let line = lines[i]
         let div = document.createElement('div')
         div.className = 'code-line'
-        div.innerHTML = this.IsWhiteSpace(lines[i]) ? '<br>' : lines[i]
+        div.innerHTML = this.IsWhiteSpace(line) ? '<br>' : line
         codeBox.appendChild(div)
 
-        if (!this.IsComment(lines[i]) && !this.IsWhiteSpace(lines[i]))
-            this.program.push({ line: lines[i], block: div })
+        if (this.IsComment(line) || this.IsWhiteSpace(line))
+            continue
+
+        line = this.RemoveComments(line)
+
+        if (line.endsWith(':')) {
+            this.labels[line.substr(0, line.length - 1)] = this.program.length
+        }
+        else {
+            this.program.push({ line: line, block: div })
+        }
     }
+
+    this.programIndex = START_LABEL in this.labels ? this.labels[START_LABEL] : 0
 }
 
 CpuSimulator.prototype.InitButtons = function() {
@@ -116,9 +143,37 @@ CpuSimulator.prototype.IsRegister = function(arg) {
     return Object.keys(this.registers).indexOf(arg) > -1
 }
 
+CpuSimulator.prototype.ProcessJump = function(jmp, label) {
+    if (jmp == JMP_CMD) {
+        this.programIndex = this.labels[label]
+    }
+    else if (jmp == JZ_CMD) {
+        if (this.flags[ZERO_FLAG].GetValue())
+            this.programIndex = this.labels[label]
+    }
+    else if (jmp == JNZ_CMD) {
+        if (!this.flags[ZERO_FLAG].GetValue())
+            this.programIndex = this.labels[label]
+    }
+    else {
+        throw `jump "${jmp}" not implemented`
+    }
+}
+
+CpuSimulator.prototype.ProcessMov = function(arg1, arg2) {
+    if (this.IsRegister(arg2)) {
+        this.registers[arg1].SetValue(this.registers[arg2].GetValue())
+    }
+    else {
+        this.registers[arg1].SetValue(arg2)
+    }
+}
+
 // TODO: flags
 CpuSimulator.prototype.ProcessCommand = function(command) {
+    this.HideAllLines()
     command.block.classList.toggle('active-line')
+
     let commandLine = command.line
     let args = commandLine.split(' ')
     let cmd = args[0]
@@ -142,9 +197,20 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         this.isTuringRun = true
         this.onTuringEnd = () => this.registers[args[1]]
     }
+    else if (cmd == MOV_CMD) {
+        this.ProcessMov(args[1], args[2])
+    }
+    else if (cmd.startsWith('J')) {
+        this.ProcessJump(cmd, args[1])
+    }
     else {
         throw `command "${commandLine}" not implemented`
     }
+}
+
+CpuSimulator.prototype.HideAllLines = function() {
+    for (let line of this.program)
+        line.block.classList.remove('active-line')
 }
 
 CpuSimulator.prototype.Reset = function() {
@@ -156,10 +222,9 @@ CpuSimulator.prototype.Reset = function() {
     for (let flag of Object.values(this.flags))
         flag.Reset()
 
-    for (let line of this.program)
-        line.block.classList.remove('active-line')
+    this.HideAllLines()
 
-    this.programIndex = 0
+    this.programIndex = START_LABEL in this.labels ? this.labels[START_LABEL] : 0
     this.isTuringRun = false
     this.onTuringEnd = null
     this.commandMachine.Clear()
@@ -193,9 +258,6 @@ CpuSimulator.prototype.Step = function(skipTuring = false) {
     }
 
     if (!this.isTuringRun) {
-        if (this.programIndex > 0)
-            this.program[this.programIndex - 1].block.classList.toggle('active-line')
-
         this.ProcessCommand(this.program[this.programIndex++], skipTuring)
     }
     else if (!this.commandMachine.Step()) {
