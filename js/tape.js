@@ -75,17 +75,10 @@ Tape.prototype.GetBorders = function() {
     let left = this.positive.length
     let right = 1 - this.negative.length
 
-    for (let i = 0; i < this.positive.length; i++) {
-        if (this.positive[i] != LAMBDA) {
+    for (let i = -this.negative.length; i < this.positive.length; i++) {
+        if (this.GetCharAt(i) != LAMBDA) {
             left = Math.min(left, i)
             right = Math.max(right, i)
-        }
-    }
-
-    for (let i = 0; i < this.negative.length; i++) {
-        if (this.negative[i] != LAMBDA) {
-            left = Math.min(left, 1 - i)
-            right = Math.max(right, 1 - i)
         }
     }
 
