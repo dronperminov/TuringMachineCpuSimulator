@@ -32,9 +32,18 @@ CpuSimulator.prototype.IsComment = function(line) {
     return line.match(/^;.*/gi) != null
 }
 
+CpuSimulator.prototype.ClearText = function(text) {
+    text = text.replace(/<div.*?>/gi, "")
+    text = text.replace(/<\/div>/gi, "\n")
+    text = text.replace(/<br\/?>/gi, "")
+
+    return text
+}
+
 CpuSimulator.prototype.CompileProgram = function() {
     let codeBox = document.getElementById('code-box')
-    let lines = codeBox.innerText.split('\n')
+    let text = this.ClearText(codeBox.innerHTML)
+    let lines = text.split('\n')
 
     this.program = []
     this.htmlLines = []
@@ -56,10 +65,12 @@ CpuSimulator.prototype.CompileProgram = function() {
 CpuSimulator.prototype.InitButtons = function() {
     this.startStopBtn = document.getElementById('start-stop-btn')
     this.stepBtn = document.getElementById('step-btn')
+    this.stepOperationBtn = document.getElementById('step-operation-btn')
     this.resetBtn = document.getElementById('reset-btn')
 
     this.startStopBtn.addEventListener('click', () => this.StartStop())
-    this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step() })
+    this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step(false) })
+    this.stepOperationBtn.addEventListener('click', () => { this.Stop(); this.Step(true) })
     this.resetBtn.addEventListener('click', () => this.Reset())
 }
 
@@ -119,11 +130,11 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         this.onTuringEnd = () => this.registers[args[1]].SetValue(this.commandMachine.GetWord())
     }
     else if (cmd == ADD_CMD) {
-        let arg1 = this.registers['A'].GetValue()
-        let arg2 = this.registers[args[1]].GetValue()
+        let arg1 = this.registers[args[1]].GetValue()
+        let arg2 = this.registers[args[2]].GetValue()
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, cmd)
         this.isTuringRun = true
-        this.onTuringEnd = () =>         this.registers['A'].SetValue(this.commandMachine.GetWord())
+        this.onTuringEnd = () => this.registers[args[1]].SetValue(this.commandMachine.GetWord())
     }
     else if (cmd == AND_CMD || cmd == OR_CMD || cmd == XOR_CMD) {
         let arg1 = this.registers[args[1]].GetValue()
@@ -162,9 +173,21 @@ CpuSimulator.prototype.Reset = function() {
     this.commandMachine.ToHTML()
 }
 
-CpuSimulator.prototype.Step = function() {
-    if (this.programIndex >= this.program.length) {
+CpuSimulator.prototype.SkipTuringRun = function() {
+    if (!this.isTuringRun)
+        return
+
+    while (this.commandMachine.Step())
+        ;
+
+    this.isTuringRun = false
+    this.onTuringEnd()
+}
+
+CpuSimulator.prototype.Step = function(skipTuring = false) {
+    if (this.programIndex >= this.program.length && !this.isTuringRun) {
         this.Stop()
+        this.program[this.programIndex - 1].block.classList.remove('active-line')
         return
     }
 
@@ -172,11 +195,15 @@ CpuSimulator.prototype.Step = function() {
         if (this.programIndex > 0)
             this.program[this.programIndex - 1].block.classList.toggle('active-line')
 
-        this.ProcessCommand(this.program[this.programIndex++])
+        this.ProcessCommand(this.program[this.programIndex++], skipTuring)
     }
     else if (!this.commandMachine.Step()) {
         this.isTuringRun = false
         this.onTuringEnd()
+    }
+
+    if (skipTuring) {
+        this.SkipTuringRun()
     }
 
     this.commandMachine.ToHTML()

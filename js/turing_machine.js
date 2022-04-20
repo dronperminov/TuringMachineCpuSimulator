@@ -69,7 +69,7 @@ TuringMachine.prototype.Step = function() {
     this.tape.SetChar(command.nextChar)
     this.tape.Move(command.move)
     this.state = command.nextState
-    this.ToHTML()
+
     return this.state != HALT
 }
 
