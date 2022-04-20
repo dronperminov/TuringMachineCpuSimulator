@@ -127,20 +127,20 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         let arg = this.registers[args[1]].GetValue()
         this.commandMachine.InitProgram(arg, cmd)
         this.isTuringRun = true
-        this.onTuringEnd = () => this.registers[args[1]].SetValue(this.commandMachine.GetWord())
+        this.onTuringEnd = () => this.registers[args[1]]
     }
     else if (cmd == ADD_CMD || cmd == AND_CMD || cmd == OR_CMD || cmd == XOR_CMD) {
         let arg1 = this.registers[args[1]].GetValue()
         let arg2 = this.registers[args[2]].GetValue()
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, cmd)
         this.isTuringRun = true
-        this.onTuringEnd = () => this.registers[args[1]].SetValue(this.commandMachine.GetWord())
+        this.onTuringEnd = () => this.registers[args[1]]
     }
     else if (cmd == NOT_CMD) {
         let arg = this.registers[args[1]].GetValue()
         this.commandMachine.InitProgram(arg, cmd)
         this.isTuringRun = true
-        this.onTuringEnd = () => this.registers[args[1]].SetValue(this.commandMachine.GetWord())
+        this.onTuringEnd = () => this.registers[args[1]]
     }
     else {
         throw `command "${commandLine}" not implemented`
@@ -166,6 +166,15 @@ CpuSimulator.prototype.Reset = function() {
     this.commandMachine.ToHTML()
 }
 
+CpuSimulator.prototype.EndTuring = function() {
+    this.isTuringRun = false
+
+    let cell = this.onTuringEnd()
+    cell.SetValue(this.commandMachine.GetWord())
+
+    this.flags[ZERO_FLAG].SetValue(cell.IsZero())
+}
+
 CpuSimulator.prototype.SkipTuringRun = function() {
     if (!this.isTuringRun)
         return
@@ -173,8 +182,7 @@ CpuSimulator.prototype.SkipTuringRun = function() {
     while (this.commandMachine.Step())
         ;
 
-    this.isTuringRun = false
-    this.onTuringEnd()
+    this.EndTuring()
 }
 
 CpuSimulator.prototype.Step = function(skipTuring = false) {
@@ -191,8 +199,7 @@ CpuSimulator.prototype.Step = function(skipTuring = false) {
         this.ProcessCommand(this.program[this.programIndex++], skipTuring)
     }
     else if (!this.commandMachine.Step()) {
-        this.isTuringRun = false
-        this.onTuringEnd()
+        this.EndTuring()
     }
 
     if (skipTuring) {

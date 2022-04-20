@@ -85,7 +85,6 @@ TuringMachine.prototype.Run = function(state) {
 
 TuringMachine.prototype.RunFromWord = function(word, state) {
     this.SetWord(word)
-    this.ToHTML()
     return this.Run(state)
 }
 

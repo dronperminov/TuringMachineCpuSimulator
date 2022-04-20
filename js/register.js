@@ -24,3 +24,11 @@ Register.prototype.Reset = function() {
     let zero = Array(this.n_bits).fill('0').join('')
     this.SetValue(zero)
 }
+
+Register.prototype.IsZero = function() {
+    for (let i = 0; i < this.n_bits; i++)
+        if (this.value[i] != '0')
+            return false
+
+    return true
+}
