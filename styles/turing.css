@@ -34,10 +34,6 @@
     display: table-row;
 }
 
-.turing-states-row:first-child {
-    font-weight: bold;
-}
-
 .turing-states-cell {
     border: 1px solid #000;
     display: table-cell;
@@ -47,5 +43,14 @@
 }
 
 .turing-states-active-cell {
+    background: #2196f3;
+    color: #fff;
+}
+
+.turing-states-active-char {
+    background: #b3e7ff;
+}
+
+.turing-states-active-state {
     background: #b3e7ff;
 }

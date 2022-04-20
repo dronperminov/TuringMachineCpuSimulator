@@ -151,16 +151,20 @@ TuringMachine.prototype.MakeNamedRow = function(names, classNames = null) {
 
 TuringMachine.prototype.MakeHeaderRow = function(alphabet) {
     let names = ['Состояние']
+    let classNames = ['']
+    let currChar = this.tape.GetChar()
 
-    for (let char of alphabet)
+    for (let char of alphabet) {
         names.push(char == LAMBDA ? LAMBDA_CELL : char)
+        classNames.push(char == currChar ? 'turing-states-active-char' : '')
+    }
 
-    return this.MakeNamedRow(names)
+    return this.MakeNamedRow(names, classNames)
 }
 
 TuringMachine.prototype.MakeStateRow = function(state, alphabet) {
     let names = [`q<sub>${state}</sub>`]
-    let classNames = ['']
+    let classNames = [state == this.state ? 'turing-states-active-state' : '']
 
     for (let char of alphabet) {
         if (char in this.states[state]) {
@@ -186,10 +190,8 @@ TuringMachine.prototype.MakeStateRow = function(state, alphabet) {
 TuringMachine.prototype.GetCommandStates = function(command) {
     let currStates = new Set()
     let currAlphabet = new Set()
-    let queue = []
-    queue.push(command)
 
-    while (queue.length > 0) {
+    for (let queue = [command]; queue.length > 0;) {
         let state = queue.pop()
 
         if (currStates.has(state) || state == HALT)
