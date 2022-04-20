@@ -156,7 +156,7 @@ TuringMachine.prototype.MakeHeaderRow = function(alphabet) {
 
     for (let char of alphabet) {
         names.push(char == LAMBDA ? LAMBDA_CELL : char)
-        classNames.push(char == currChar ? 'turing-states-active-char' : '')
+        classNames.push(char == currChar && this.state != HALT ? 'turing-states-active-char' : '')
     }
 
     return this.MakeNamedRow(names, classNames)

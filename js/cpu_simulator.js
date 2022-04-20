@@ -129,17 +129,10 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         this.isTuringRun = true
         this.onTuringEnd = () => this.registers[args[1]].SetValue(this.commandMachine.GetWord())
     }
-    else if (cmd == ADD_CMD) {
+    else if (cmd == ADD_CMD || cmd == AND_CMD || cmd == OR_CMD || cmd == XOR_CMD) {
         let arg1 = this.registers[args[1]].GetValue()
         let arg2 = this.registers[args[2]].GetValue()
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, cmd)
-        this.isTuringRun = true
-        this.onTuringEnd = () => this.registers[args[1]].SetValue(this.commandMachine.GetWord())
-    }
-    else if (cmd == AND_CMD || cmd == OR_CMD || cmd == XOR_CMD) {
-        let arg1 = this.registers[args[1]].GetValue()
-        let arg2 = this.registers[args[2]].GetValue()
-        this.commandMachine.InitProgram(`${arg1}#${arg2}=`, cmd)
         this.isTuringRun = true
         this.onTuringEnd = () => this.registers[args[1]].SetValue(this.commandMachine.GetWord())
     }
