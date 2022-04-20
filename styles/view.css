@@ -1,0 +1,13 @@
+.registers, .flags {
+    padding: 5px;
+    font-family: Consolas;
+    font-size: 18px;
+}
+
+.register {
+    padding: 3px 0;
+}
+
+.flag {
+    padding: 3px 0;
+}

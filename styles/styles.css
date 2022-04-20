@@ -1,0 +1,88 @@
+body, head {
+    margin: 0;
+    padding: 0;
+}
+
+.simulator * {
+    box-sizing: border-box;
+}
+
+.simulator {
+    font-family: Ubuntu;
+    font-size: 16px;
+
+    display: grid;
+    width: 100%;
+    height: 100vh;
+
+    grid-template-columns: 40% 60%;
+    grid-template-rows: 50px auto 20px;
+
+    grid-template-areas:
+    "left-header right-header"
+    "code view"
+    "left-footer right-footer";
+}
+
+.controls {
+    grid-area: left-header;
+    background: #eee;
+    padding: 5px;
+}
+
+.code {
+    grid-area: code;
+    height: 100%;
+    border-radius: 5px 5px 0 0;
+    border: 1px solid #000;
+}
+
+.code .header {
+    padding: 10px 5px;
+    background: #b3e7ff;
+    border-radius: 5px 5px 0 0;
+    border-bottom: 1px solid #000;
+}
+
+.code .code-area {
+    width: 100%;
+    padding: 5px;
+}
+
+.code-area .code-input {
+    font-family: Consolas;
+    width: 100%;
+    margin-bottom: 5px;
+    resize: none;
+    border: none;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.code-line {
+    font-family: Consolas;
+}
+
+.active-line {
+    background: #2196f3;
+    color: #fff;
+}
+
+.left-footer {
+    grid-area: left-footer;
+    background: #ddd;
+}
+
+.right-header {
+    grid-area: right-header;
+}
+
+.right-footer {
+    grid-area: right-footer;
+    background: #ddd;
+}
+
+.view {
+    grid-area: view;
+    padding: 0 5px;
+}
