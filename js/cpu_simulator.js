@@ -8,6 +8,7 @@ const DEC_CMD = 'DEC'
 
 const ADD_CMD = 'ADD'
 const SUB_CMD = 'SUB'
+const CMP_CMD = 'CMP'
 
 const AND_CMD = 'AND'
 const OR_CMD = 'OR'
@@ -16,10 +17,25 @@ const NOT_CMD = 'NOT'
 
 const MOV_CMD = 'MOV'
 
-const CMP_CMD = 'CMP'
 const JMP_CMD = 'JMP'
+
 const JZ_CMD = 'JZ'
 const JNZ_CMD = 'JNZ'
+
+const JC_CMD = 'JC'
+const JNC_CMD = 'JNC'
+
+const JA_CMD = 'JA' // > (no carry and no zero)
+const JAE_CMD = 'JAE' // >= (no carry)
+const JB_CMD = 'JB' // < (carry)
+const JBE_CMD = 'JBE' // <= (carry or zero)
+const JE_CMD = 'JE' // == (zero)
+const JNE_CMD = 'JNE' // != (not zero)
+
+const JNA_CMD = 'JNA' // not >
+const JNAE_CMD = 'JNAE' // not >=
+const JNB_CMD = 'JNB' // not <
+const JNBE_CMD = 'JNBE' // not <=
 
 function CpuSimulator(commandMachine, n_bits = 8) {
     this.commandMachine = commandMachine
@@ -148,12 +164,28 @@ CpuSimulator.prototype.ProcessJump = function(jmp, label) {
     if (jmp == JMP_CMD) {
         this.programIndex = this.labels[label]
     }
-    else if (jmp == JZ_CMD) {
+    else if (jmp == JZ_CMD || jmp == JE_CMD) {
         if (this.flags[ZERO_FLAG].GetValue())
             this.programIndex = this.labels[label]
     }
-    else if (jmp == JNZ_CMD) {
+    else if (jmp == JNZ_CMD || jmp == JNE_CMD) {
         if (!this.flags[ZERO_FLAG].GetValue())
+            this.programIndex = this.labels[label]
+    }
+    else if (jmp == JC_CMD || jmp == JB_CMD || jmp == JNAE_CMD) {
+        if (this.flags[CARRY_FLAG].GetValue())
+            this.programIndex = this.labels[label]
+    }
+    else if (jmp == JNC_CMD || jmp == JAE_CMD || jmp == JNB_CMD) {
+        if (!this.flags[CARRY_FLAG].GetValue())
+            this.programIndex = this.labels[label]
+    }
+    else if (jmp == JA_CMD || jmp == JNBE_CMD) {
+        if (!this.flags[ZERO_FLAG].GetValue() && !this.flags[CARRY_FLAG].GetValue())
+            this.programIndex = this.labels[label]
+    }
+    else if (jmp == JBE_CMD || jmp == JNA_CMD) {
+        if (this.flags[ZERO_FLAG].GetValue() || this.flags[CARRY_FLAG].GetValue())
             this.programIndex = this.labels[label]
     }
     else {
