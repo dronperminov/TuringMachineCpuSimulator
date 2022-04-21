@@ -42,7 +42,7 @@ commandMachine.AddState("SHL-test", {'0': '1,L,SHL-test', '1': '0,L,SHL-pre', '#
 commandMachine.AddState("SHL-begin", {'0': "L", '1': "L", '': `,R,${HALT}`})
 commandMachine.AddState("SHL-pre", {'0': "L", '1': "L", '#': '#,L,SHL-make'})
 commandMachine.AddState("SHL-make", {'0': '0,L,SHL-zero', '1': '0,L,SHL-one'})
-commandMachine.AddState("SHL-zero", {'0': "L", '1': '0,L,SHL-one', '': '0,R,SHL'})
+commandMachine.AddState("SHL-zero", {'0': "L", '1': '0,L,SHL-one', '': ',R,SHL'})
 commandMachine.AddState("SHL-one", {'0': '1,L,SHL-zero', '1': "L", '': '1,R,SHL'})
 
 commandMachine.AddState("SHR", {'0': "R", '1': "R", '#': "R", '': ',L,SHR-test'})
