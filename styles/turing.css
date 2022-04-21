@@ -1,3 +1,7 @@
+.machine {
+    margin-bottom: 10px;
+}
+
 .turing-tape {
     display: table;
     width: 100%;

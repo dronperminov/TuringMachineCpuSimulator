@@ -1,4 +1,4 @@
-var commandMachine = new TuringMachine()
+var commandMachine = new TuringMachine('machine-box', 'Машина Тьюринга (команды)')
 
 commandMachine.AddState("move-begin", {'0': 'L',   '1': 'L',   '': `,R,${HALT}`})
 commandMachine.AddState("normalize", {'0': "L", '1': "L", 'I': '1,L,normalize', 'O': '0,L,normalize', '': `,R,${HALT}`})

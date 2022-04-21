@@ -2,10 +2,11 @@ const HALT = "!"
 const TAPE_CELL_SIZE = 40
 const LAMBDA_CELL = 'λ'
 
-function TuringMachine() {
+function TuringMachine(boxId, header) {
     this.tape = new Tape()
     this.states = {}
-    this.machineBox = document.getElementById('machine-box')
+    this.machineBox = document.getElementById(boxId)
+    this.header = header
     this.alphabet = new Set()
 }
 
@@ -24,6 +25,10 @@ TuringMachine.prototype.GetWord = function() {
     return this.tape.GetWord()
 }
 
+TuringMachine.prototype.WriteWord = function(word) {
+    this.tape.WriteWord(word)
+}
+
 TuringMachine.prototype.Clear = function() {
     this.tape.Clear()
     this.state = ''
@@ -31,7 +36,9 @@ TuringMachine.prototype.Clear = function() {
 }
 
 TuringMachine.prototype.InitProgram = function(word, state) {
-    this.SetWord(word)
+    if (word.length > 0)
+        this.SetWord(word)
+
     this.state = state
     this.runCommand = state
 }
@@ -225,7 +232,7 @@ TuringMachine.prototype.MakeStates = function() {
 }
 
 TuringMachine.prototype.ToHTML = function() {
-    this.machineBox.innerHTML = '<b>Машина Тьюринга:</b><br>'
+    this.machineBox.innerHTML = `<b>${this.header}</b><br>`
     this.MakeTape()
 
     if (this.state)

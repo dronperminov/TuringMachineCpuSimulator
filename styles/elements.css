@@ -13,3 +13,10 @@
     background: #b3e7ff;
     cursor: pointer;
 }
+
+input[disabled].button {
+    background: #ddd;
+    color: #888;
+    border-color: #888;
+    cursor: default;
+}

@@ -10,11 +10,15 @@ function Tape() {
 }
 
 Tape.prototype.SetChar = function(c) {
-    if (this.index >= 0) {
-        this.positive[this.index] = c
+    this.SetCharAt(this.index, c)
+}
+
+Tape.prototype.SetCharAt = function(index, c) {
+    if (index >= 0) {
+        this.positive[index] = c
     }
     else {
-        this.negative[1 - this.index] = c
+        this.negative[1 - index] = c
     }
 }
 
@@ -65,6 +69,12 @@ Tape.prototype.GetWord = function() {
     return word.join('')
 }
 
+Tape.prototype.WriteWord = function(word) {
+    for (let i = 0; i < word.length; i++) {
+        this.SetCharAt(this.index + i, word[i])
+    }
+}
+
 Tape.prototype.Clear = function() {
     this.negative = []
     this.positive = [LAMBDA]
@@ -74,13 +84,18 @@ Tape.prototype.Clear = function() {
 Tape.prototype.GetBorders = function() {
     let left = this.positive.length
     let right = 1 - this.negative.length
+    let haveChars = false
 
     for (let i = -this.negative.length; i < this.positive.length; i++) {
         if (this.GetCharAt(i) != LAMBDA) {
             left = Math.min(left, i)
             right = Math.max(right, i)
+            haveChars = true
         }
     }
 
-    return {left, right}
+    if (haveChars)
+        return {left, right}
+
+    return {left: this.index, right: this.index }
 }

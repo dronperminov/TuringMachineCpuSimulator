@@ -20,6 +20,9 @@ const SHR_CMD = 'SHR'
 
 const MOV_CMD = 'MOV'
 
+const PUSH_CMD = 'PUSH'
+const POP_CMD = 'POP'
+
 const JMP_CMD = 'JMP'
 
 const JZ_CMD = 'JZ'
@@ -40,8 +43,9 @@ const JNAE_CMD = 'JNAE' // not >=
 const JNB_CMD = 'JNB' // not <
 const JNBE_CMD = 'JNBE' // not <=
 
-function CpuSimulator(commandMachine, n_bits = 8) {
+function CpuSimulator(commandMachine, stackMachine, n_bits = 8) {
     this.commandMachine = commandMachine
+    this.stackMachine = stackMachine
     this.n_bits = n_bits
 
     this.InitButtons()
@@ -249,6 +253,7 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         this.commandMachine.InitProgram(arg, cmd)
         this.isTuringRun = true
         this.resultOperand = this.registers[args[1]]
+        this.machine = this.commandMachine
     }
     else if ([ADD_CMD, SUB_CMD, SUB_CMD, AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD].indexOf(cmd) > -1) {
         let arg1 = this.registers[args[1]].GetValue()
@@ -256,6 +261,7 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, cmd)
         this.isTuringRun = true
         this.resultOperand = this.registers[args[1]]
+        this.machine = this.commandMachine
     }
     else if (cmd == CMP_CMD) {
         let arg1 = this.registers[args[1]].GetValue()
@@ -263,15 +269,31 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, SUB_CMD)
         this.isTuringRun = true
         this.resultOperand = null
+        this.machine = this.commandMachine
     }
     else if (cmd == NOT_CMD) {
         let arg = this.registers[args[1]].GetValue()
         this.commandMachine.InitProgram(arg, cmd)
         this.isTuringRun = true
         this.resultOperand = this.registers[args[1]]
+        this.machine = this.commandMachine
     }
     else if (cmd == MOV_CMD) {
         this.ProcessMov(args[1], args[2])
+    }
+    else if (cmd == PUSH_CMD) {
+        let arg = this.GetArgumentValue(args[1])
+        this.stackMachine.InitProgram('', cmd)
+        this.isTuringRun = true
+        this.resultOperand = arg
+        this.machine = this.stackMachine
+    }
+    else if (cmd == POP_CMD) {
+        this.popResult = this.stackMachine.GetWord()
+        this.stackMachine.InitProgram('', cmd)
+        this.isTuringRun = true
+        this.resultOperand = this.registers[args[1]]
+        this.machine = this.stackMachine
     }
     else if (cmd.startsWith('J')) {
         this.ProcessJump(cmd, args[1])
@@ -286,6 +308,11 @@ CpuSimulator.prototype.HideAllLines = function() {
         line.block.classList.remove('active-line')
 }
 
+CpuSimulator.prototype.UpdateTuringMachines = function() {
+    this.commandMachine.ToHTML()
+    this.stackMachine.ToHTML()
+}
+
 CpuSimulator.prototype.Reset = function() {
     this.Stop()
 
@@ -295,13 +322,15 @@ CpuSimulator.prototype.Reset = function() {
     for (let flag of Object.values(this.flags))
         flag.Reset()
 
+    this.DisableRunButtons(false)
     this.HideAllLines()
 
     this.programIndex = 0
     this.isTuringRun = false
     this.resultOperand = null
     this.commandMachine.Clear()
-    this.commandMachine.ToHTML()
+    this.stackMachine.Clear()
+    this.UpdateTuringMachines()
 }
 
 CpuSimulator.prototype.IsZero = function(value) {
@@ -316,10 +345,45 @@ CpuSimulator.prototype.IsCarry = function(value) {
     return value.length > this.n_bits
 }
 
+CpuSimulator.prototype.DisableRunButtons = function(disable = true) {
+    if (disable) {
+        this.stepBtn.setAttribute('disabled', '')
+        this.stepOperationBtn.setAttribute('disabled', '')
+        this.startStopBtn.setAttribute('disabled', '')
+    }
+    else {
+        this.stepBtn.removeAttribute('disabled')
+        this.stepOperationBtn.removeAttribute('disabled')
+        this.startStopBtn.removeAttribute('disabled')
+    }
+}
+
+CpuSimulator.prototype.HaltByError = function(error) {
+    alert(error)
+    this.HideAllLines()
+    this.programIndex = this.program.length
+    this.DisableRunButtons(true)
+}
+
 CpuSimulator.prototype.EndTuring = function() {
     this.isTuringRun = false
 
-    let result = this.commandMachine.GetWord()
+    let result = this.machine.GetWord()
+
+    if (this.machine == this.stackMachine) {
+        if (this.machine.runCommand == PUSH_CMD) {
+            this.machine.WriteWord(this.resultOperand)
+            return
+        }
+
+        result = this.popResult
+        this.machine.state = ''
+
+        if (result == '') {
+            this.HaltByError('Stack underflow!')
+            return
+        }
+    }
 
     this.flags[ZERO_FLAG].SetValue(this.IsZero(result))
     this.flags[CARRY_FLAG].SetValue(this.IsCarry(result))
@@ -327,18 +391,17 @@ CpuSimulator.prototype.EndTuring = function() {
     if (this.resultOperand == null)
         return
 
-    let register = this.resultOperand
-    register.SetValue(result)
+    this.resultOperand.SetValue(result)
 
     if (this.IsCarry(result))
-        register.FixCarry()
+        this.resultOperand.FixCarry()
 }
 
 CpuSimulator.prototype.SkipTuringRun = function() {
     if (!this.isTuringRun)
         return
 
-    while (this.commandMachine.Step())
+    while (this.machine.Step())
         ;
 
     this.EndTuring()
@@ -347,6 +410,7 @@ CpuSimulator.prototype.SkipTuringRun = function() {
 CpuSimulator.prototype.Step = function(skipTuring = false) {
     if (this.programIndex >= this.program.length && !this.isTuringRun) {
         this.Stop()
+        this.DisableRunButtons()
         this.program[this.programIndex - 1].block.classList.remove('active-line')
         return
     }
@@ -354,7 +418,7 @@ CpuSimulator.prototype.Step = function(skipTuring = false) {
     if (!this.isTuringRun) {
         this.ProcessCommand(this.program[this.programIndex++], skipTuring)
     }
-    else if (!this.commandMachine.Step()) {
+    else if (!this.machine.Step()) {
         this.EndTuring()
     }
 
@@ -362,7 +426,7 @@ CpuSimulator.prototype.Step = function(skipTuring = false) {
         this.SkipTuringRun()
     }
 
-    this.commandMachine.ToHTML()
+    this.UpdateTuringMachines()
 }
 
 CpuSimulator.prototype.StartStop = function() {
