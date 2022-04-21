@@ -16,6 +16,7 @@ const NOT_CMD = 'NOT'
 
 const MOV_CMD = 'MOV'
 
+const CMP_CMD = 'CMP'
 const JMP_CMD = 'JMP'
 const JZ_CMD = 'JZ'
 const JNZ_CMD = 'JNZ'
@@ -181,16 +182,15 @@ CpuSimulator.prototype.ConstantToBits = function(value) {
     return bits.join('')
 }
 
+CpuSimulator.prototype.GetArgumentValue = function(arg) {
+    if (this.IsRegister(arg))
+        return this.registers[arg].GetValue()
+
+    return this.ConstantToBits(arg)
+}
+
 CpuSimulator.prototype.ProcessMov = function(arg1, arg2) {
-    let value
-
-    if (this.IsRegister(arg2)) {
-        value = this.registers[arg2].GetValue()
-    }
-    else {
-        value = this.ConstantToBits(arg2)
-    }
-
+    let value = this.GetArgumentValue(arg2)
     this.registers[arg1].SetValue(value)
 }
 
@@ -206,20 +206,27 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         let arg = this.registers[args[1]].GetValue()
         this.commandMachine.InitProgram(arg, cmd)
         this.isTuringRun = true
-        this.onTuringEnd = () => this.registers[args[1]]
+        this.resultOperand = this.registers[args[1]]
     }
     else if (cmd == ADD_CMD || cmd == SUB_CMD || cmd == AND_CMD || cmd == OR_CMD || cmd == XOR_CMD) {
         let arg1 = this.registers[args[1]].GetValue()
-        let arg2 = this.registers[args[2]].GetValue()
+        let arg2 = this.GetArgumentValue(args[2])
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, cmd)
         this.isTuringRun = true
-        this.onTuringEnd = () => this.registers[args[1]]
+        this.resultOperand = this.registers[args[1]]
+    }
+    else if (cmd == CMP_CMD) {
+        let arg1 = this.registers[args[1]].GetValue()
+        let arg2 = this.GetArgumentValue(args[2])
+        this.commandMachine.InitProgram(`${arg1}#${arg2}`, SUB_CMD)
+        this.isTuringRun = true
+        this.resultOperand = null
     }
     else if (cmd == NOT_CMD) {
         let arg = this.registers[args[1]].GetValue()
         this.commandMachine.InitProgram(arg, cmd)
         this.isTuringRun = true
-        this.onTuringEnd = () => this.registers[args[1]]
+        this.resultOperand = this.registers[args[1]]
     }
     else if (cmd == MOV_CMD) {
         this.ProcessMov(args[1], args[2])
@@ -250,22 +257,38 @@ CpuSimulator.prototype.Reset = function() {
 
     this.programIndex = 0
     this.isTuringRun = false
-    this.onTuringEnd = null
+    this.resultOperand = null
     this.commandMachine.Clear()
     this.commandMachine.ToHTML()
+}
+
+CpuSimulator.prototype.IsZero = function(value) {
+    for (let i = 0; i < this.n_bits; i++)
+        if (value[i] != '0')
+            return false
+
+    return true
+}
+
+CpuSimulator.prototype.IsCarry = function(value) {
+    return value.length > this.n_bits
 }
 
 CpuSimulator.prototype.EndTuring = function() {
     this.isTuringRun = false
 
     let result = this.commandMachine.GetWord()
-    let register = this.onTuringEnd()
+
+    this.flags[ZERO_FLAG].SetValue(this.IsZero(result))
+    this.flags[CARRY_FLAG].SetValue(this.IsCarry(result))
+
+    if (this.resultOperand == null)
+        return
+
+    let register = this.resultOperand
     register.SetValue(result)
 
-    this.flags[ZERO_FLAG].SetValue(register.IsZero())
-    this.flags[CARRY_FLAG].SetValue(register.IsCarry())
-
-    if (register.IsCarry())
+    if (this.IsCarry(result))
         register.FixCarry()
 }
 

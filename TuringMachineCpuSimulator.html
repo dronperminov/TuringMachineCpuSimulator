@@ -34,6 +34,9 @@
 start:
     MOV A 11  ; номер числа Фибоначчи
     MOV C 0x1
+    CMP A 12
+    CMP A 11
+    CMP A 10
     JMP .loop
 
 end:

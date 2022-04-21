@@ -25,18 +25,7 @@ Register.prototype.Reset = function() {
     this.SetValue(zero)
 }
 
-Register.prototype.IsZero = function() {
-    for (let i = 0; i < this.n_bits; i++)
-        if (this.value[i] != '0')
-            return false
-
-    return true
-}
-
-Register.prototype.IsCarry = function() {
-    return this.value.length > this.n_bits
-}
-
 Register.prototype.FixCarry = function() {
-    this.SetValue(this.value.substr(0, this.n_bits))
+    let len = this.value.length
+    this.SetValue(this.value.substr(len - this.n_bits))
 }
