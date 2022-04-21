@@ -160,16 +160,40 @@ CpuSimulator.prototype.ProcessJump = function(jmp, label) {
     }
 }
 
-CpuSimulator.prototype.ProcessMov = function(arg1, arg2) {
-    if (this.IsRegister(arg2)) {
-        this.registers[arg1].SetValue(this.registers[arg2].GetValue())
+CpuSimulator.prototype.ConstantToBits = function(value) {
+    if (value.startsWith('0b')) {
+        value = Number.parseInt(value.substr(2), 2)
+    }
+    else if (value.startsWith('0x')) {
+        value = Number.parseInt(value.substr(2), 16)
     }
     else {
-        this.registers[arg1].SetValue(arg2)
+        value = Number.parseInt(value)
     }
+
+    let bits = []
+
+    for (; bits.length != this.n_bits; value >>= 1) {
+        bits.push(value & 1)
+    }
+
+    bits.reverse()
+    return bits.join('')
 }
 
-// TODO: flags
+CpuSimulator.prototype.ProcessMov = function(arg1, arg2) {
+    let value
+
+    if (this.IsRegister(arg2)) {
+        value = this.registers[arg2].GetValue()
+    }
+    else {
+        value = this.ConstantToBits(arg2)
+    }
+
+    this.registers[arg1].SetValue(value)
+}
+
 CpuSimulator.prototype.ProcessCommand = function(command) {
     this.HideAllLines()
     command.block.classList.toggle('active-line')
