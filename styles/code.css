@@ -1,0 +1,44 @@
+.code .code-area {
+    width: 100%;
+    padding: 5px;
+}
+
+.code-area .code-input {
+    font-family: Consolas;
+    width: 100%;
+    margin-bottom: 5px;
+    resize: none;
+    border: none;
+    overflow-y: auto;
+    white-space: pre;
+}
+
+.code-line {
+    font-family: Consolas;
+    width: fit-content;
+}
+
+.active-line {
+    background: #2196f3;
+    color: #fff;
+}
+
+.comment {
+    color: #aaa;
+}
+
+.number {
+    color: #00bcd4;
+}
+
+.label {
+    color: #ff9800;
+}
+
+.register {
+    color: #9c27b0;
+}
+
+.active-line .comment {
+    color: #ddd;
+}

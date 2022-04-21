@@ -44,30 +44,6 @@ body, head {
     border-bottom: 1px solid #000;
 }
 
-.code .code-area {
-    width: 100%;
-    padding: 5px;
-}
-
-.code-area .code-input {
-    font-family: Consolas;
-    width: 100%;
-    margin-bottom: 5px;
-    resize: none;
-    border: none;
-    overflow-y: auto;
-    white-space: pre-wrap;
-}
-
-.code-line {
-    font-family: Consolas;
-}
-
-.active-line {
-    background: #2196f3;
-    color: #fff;
-}
-
 .left-footer {
     grid-area: left-footer;
     background: #ddd;

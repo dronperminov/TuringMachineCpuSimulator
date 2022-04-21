@@ -62,13 +62,15 @@ CpuSimulator.prototype.IsWhiteSpace = function(line) {
 }
 
 CpuSimulator.prototype.IsComment = function(line) {
-    return line.match(/^;.*/gi) != null
+    return line.match(/^ *;.*/gi) != null
 }
 
 CpuSimulator.prototype.ClearText = function(text) {
-    text = text.replace(/<div.*?>/gi, "")
+    text = text.replace(/<(div|span).*?>/gi, "")
     text = text.replace(/<\/div>/gi, "\n")
+    text = text.replace(/<\/span>/gi, "")
     text = text.replace(/<br\/?>/gi, "")
+    text = text.replace(/\s+$/gi, "")
 
     return text
 }
@@ -78,6 +80,59 @@ CpuSimulator.prototype.RemoveComments = function(line) {
     line = line.replace(/^ +/gi, "")
     line = line.replace(/ +$/gi, "")
     return line
+}
+
+CpuSimulator.prototype.SpanLine = function(line, templates) {
+    let intervals = []
+
+    for (let template of templates) {
+        for (let match of line.matchAll(template.regex)) {
+            console.log(match)
+            let start = match.index
+            let end = start + match[0].length
+            intervals.push({start: start, end: end, len: end - start, name: template.name})
+        }
+    }
+
+    intervals.sort((a, b) => a.start - b.start)
+
+    let prev = null
+    let filtered = []
+
+    for (let interval of intervals) {
+        if (prev && interval.start < prev.end)
+            continue
+
+        filtered.push(interval)
+        prev = interval
+    }
+
+    filtered.sort((a, b) => b.start - a.start)
+
+    for (let interval of filtered) {
+        let before = line.substr(0, interval.start)
+        let inside = line.substr(interval.start, interval.len)
+        let after = line.substr(interval.end)
+        line = `${before}<span class="${interval.name}">${inside}</span>${after}`
+    }
+
+    return line
+}
+
+CpuSimulator.prototype.LineToDiv = function(line) {
+    let div = document.createElement('div')
+    div.className = 'code-line'
+
+    // line = this.SpanLine(line, [
+    //     {regex: /;.*/gi, name: "comment"},
+    //     {regex: /\b(\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\da-fA-F]+)\b/gi, name: "number"},
+    //     {regex: /^ *[.\w]\w+:/gi, name: "label"},
+    //     {regex: /\b(?:A|B|C|D|IP|SP)\b/gi, name: "register"}
+    // ])
+
+    div.innerHTML = this.IsWhiteSpace(line) ? '<br>' : line
+
+    return div
 }
 
 CpuSimulator.prototype.CompileProgram = function() {
@@ -94,9 +149,7 @@ CpuSimulator.prototype.CompileProgram = function() {
 
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i]
-        let div = document.createElement('div')
-        div.className = 'code-line'
-        div.innerHTML = this.IsWhiteSpace(line) ? '<br>' : line
+        let div = this.LineToDiv(line)
         codeBox.appendChild(div)
 
         if (this.IsComment(line) || this.IsWhiteSpace(line))
