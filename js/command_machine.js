@@ -38,12 +38,20 @@ commandMachine.AddState("XOR-left1", {'0': "L", '1': "L", '#': '#,L,XOR-one', })
 
 // сдвиг влево первого числа на велину второго числа
 commandMachine.AddState("SHL", {'0': "R", '1': "R", '#': "R", '': ',L,SHL-test'})
-commandMachine.AddState("SHL-begin", {'0': "L", '1': "L", '': `,R,${HALT}`})
 commandMachine.AddState("SHL-test", {'0': '1,L,SHL-test', '1': '0,L,SHL-pre', '#': ',L,SHL-begin'})
+commandMachine.AddState("SHL-begin", {'0': "L", '1': "L", '': `,R,${HALT}`})
+commandMachine.AddState("SHL-pre", {'0': "L", '1': "L", '#': '#,L,SHL-make'})
 commandMachine.AddState("SHL-make", {'0': '0,L,SHL-zero', '1': '0,L,SHL-one'})
 commandMachine.AddState("SHL-zero", {'0': "L", '1': '0,L,SHL-one', '': '0,R,SHL'})
-commandMachine.AddState("SHL-pre", {'0': "L", '1': "L", '#': '#,L,SHL-make'})
 commandMachine.AddState("SHL-one", {'0': '1,L,SHL-zero', '1': "L", '': '1,R,SHL'})
+
+commandMachine.AddState("SHR", {'0': "R", '1': "R", '#': "R", '': ',L,SHR-test'})
+commandMachine.AddState("SHR-test", {'0': '1,L,SHR-test', '1': '0,L,SHR-pre', '#': ',L,SHR-begin'})
+commandMachine.AddState("SHR-begin", {'0': "L", '1': "L", '': `,R,${HALT}`})
+commandMachine.AddState("SHR-pre", {'0': "L", '1': "L", '#': "L", '': ',R,SHR-make'})
+commandMachine.AddState("SHR-make", {'0': '0,R,SHR-zero', '1': '0,R,SHR-one'})
+commandMachine.AddState("SHR-zero", {'0': "R", '1': '0,R,SHR-one', '#': '#,R,SHR', '': '0,R,SHR'})
+commandMachine.AddState("SHR-one", {'0': '1,R,SHR-zero', '1': "R", '#': '#,R,SHR', '': '1,R,SHR'})
 
 // сложение двух чисел произвольной размерности
 commandMachine.AddState("ADD", {'0': "R", '1': "R", '': ',L,ADD-check', 'I': "R", '#': "R", 'O': "R"})
