@@ -197,8 +197,17 @@ CpuSimulator.prototype.ConstantToBits = function(value) {
     if (value.startsWith('0b')) {
         value = Number.parseInt(value.substr(2), 2)
     }
+    else if (value.endsWith('b')) {
+        value = Number.parseInt(value.substr(0, value.length - 1), 2)
+    }
+    else if (value.startsWith('0o')) {
+        value = Number.parseInt(value.substr(2), 8)
+    }
     else if (value.startsWith('0x')) {
         value = Number.parseInt(value.substr(2), 16)
+    }
+    else if (value.endsWith('d')) {
+        value = Number.parseInt(value.substr(0, value.length - 1))
     }
     else {
         value = Number.parseInt(value)
@@ -206,12 +215,10 @@ CpuSimulator.prototype.ConstantToBits = function(value) {
 
     let bits = []
 
-    for (; bits.length != this.n_bits; value >>= 1) {
+    for (; bits.length != this.n_bits; value >>= 1)
         bits.push(value & 1)
-    }
 
-    bits.reverse()
-    return bits.join('')
+    return bits.reverse().join('')
 }
 
 CpuSimulator.prototype.GetArgumentValue = function(arg) {
