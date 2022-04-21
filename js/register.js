@@ -32,3 +32,11 @@ Register.prototype.IsZero = function() {
 
     return true
 }
+
+Register.prototype.IsCarry = function() {
+    return this.value.length > this.n_bits
+}
+
+Register.prototype.FixCarry = function() {
+    this.SetValue(this.value.substr(0, this.n_bits))
+}

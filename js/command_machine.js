@@ -47,3 +47,14 @@ commandMachine.AddState("ADD-zero2", {'0': 'O,N,ADD', '1': 'I,N,ADD', 'I': "L", 
 commandMachine.AddState("ADD-one2", {'0': 'I,N,ADD', '1': 'O,L,ADD-one3', 'I': "L", '': 'I,R,ADD', 'O': "L"})
 commandMachine.AddState("ADD-one3", {'0': '1,N,ADD', '1': '0,L,ADD-one3', '': '1,R,ADD'})
 commandMachine.AddState("ADD-check", {'0': ',L,ADD-zero', '1': ',L,ADD-one', '#': ',L,normalize', })
+
+
+// разность двух чисел произвольной размерности
+commandMachine.AddState("SUB", {'0': "R", '1': "R", '#': "R", 'I': "R", 'O': "R", '': ',L,SUB-check'})
+commandMachine.AddState("SUB-check", {'0': ',L,SUB-move0', '1': ',L,SUB-move1', '#': ',L,SUB-clear'})
+commandMachine.AddState("SUB-move0", {'0': "L", '1': "L", '#': '#,L,SUB-sub0'})
+commandMachine.AddState("SUB-move1", {'0': "L", '1': "L", '#': '#,L,SUB-sub1'})
+commandMachine.AddState("SUB-sub0", {'0': 'O,N,SUB', '1': 'I,N,SUB', 'I': "L", 'O': "L"})
+commandMachine.AddState("SUB-sub1", {'0': 'I,L,SUB-sub-carry', '1': 'O,N,SUB', 'I': "L", 'O': "L"})
+commandMachine.AddState("SUB-sub-carry", {'0': '1,L,SUB-sub-carry', '1': '0,N,SUB', '': '1,N,SUB'})
+commandMachine.AddState("SUB-clear", {'0': "L", '1': "L", 'I': '1,L,SUB-clear', 'O': '0,L,SUB-clear', '': `,R,${HALT}`})

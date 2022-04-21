@@ -7,6 +7,7 @@ const INC_CMD = 'INC'
 const DEC_CMD = 'DEC'
 
 const ADD_CMD = 'ADD'
+const SUB_CMD = 'SUB'
 
 const AND_CMD = 'AND'
 const OR_CMD = 'OR'
@@ -183,7 +184,7 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         this.isTuringRun = true
         this.onTuringEnd = () => this.registers[args[1]]
     }
-    else if (cmd == ADD_CMD || cmd == AND_CMD || cmd == OR_CMD || cmd == XOR_CMD) {
+    else if (cmd == ADD_CMD || cmd == SUB_CMD || cmd == AND_CMD || cmd == OR_CMD || cmd == XOR_CMD) {
         let arg1 = this.registers[args[1]].GetValue()
         let arg2 = this.registers[args[2]].GetValue()
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, cmd)
@@ -233,10 +234,15 @@ CpuSimulator.prototype.Reset = function() {
 CpuSimulator.prototype.EndTuring = function() {
     this.isTuringRun = false
 
-    let cell = this.onTuringEnd()
-    cell.SetValue(this.commandMachine.GetWord())
+    let result = this.commandMachine.GetWord()
+    let register = this.onTuringEnd()
+    register.SetValue(result)
 
-    this.flags[ZERO_FLAG].SetValue(cell.IsZero())
+    this.flags[ZERO_FLAG].SetValue(register.IsZero())
+    this.flags[CARRY_FLAG].SetValue(register.IsCarry())
+
+    if (register.IsCarry())
+        register.FixCarry()
 }
 
 CpuSimulator.prototype.SkipTuringRun = function() {
