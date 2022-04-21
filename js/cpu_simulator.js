@@ -15,6 +15,8 @@ const OR_CMD = 'OR'
 const XOR_CMD = 'XOR'
 const NOT_CMD = 'NOT'
 
+const SHL_CMD = 'SHL'
+
 const MOV_CMD = 'MOV'
 
 const JMP_CMD = 'JMP'
@@ -247,7 +249,7 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         this.isTuringRun = true
         this.resultOperand = this.registers[args[1]]
     }
-    else if (cmd == ADD_CMD || cmd == SUB_CMD || cmd == AND_CMD || cmd == OR_CMD || cmd == XOR_CMD) {
+    else if ([ADD_CMD, SUB_CMD, SUB_CMD, AND_CMD, OR_CMD, XOR_CMD, SHL_CMD].indexOf(cmd) > -1) {
         let arg1 = this.registers[args[1]].GetValue()
         let arg2 = this.GetArgumentValue(args[2])
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, cmd)
