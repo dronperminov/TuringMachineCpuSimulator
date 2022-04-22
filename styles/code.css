@@ -1,15 +1,30 @@
-.code .code-area {
+.code-area {
     width: 100%;
-    padding: 5px;
+    position: relative;
+    overflow: auto;
 }
 
-.code-area .code-input {
+.code-input {
     font-family: Consolas;
     width: 100%;
-    margin-bottom: 5px;
     resize: none;
     border: none;
-    overflow-y: auto;
+    white-space: pre;
+    padding: 5px;
+
+    position: relative;
+    color: transparent;
+    caret-color: black;
+}
+
+.code-input-highlight {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    user-select: none;
+    padding: 5px;
     white-space: pre;
 }
 
@@ -19,26 +34,30 @@
 }
 
 .active-line {
-    background: #2196f3;
-    color: #fff;
+    background: #defee6;
+    width: auto;
 }
 
-.comment {
+.comment-code {
     color: #aaa;
 }
 
-.number {
+.number-code {
     color: #00bcd4;
 }
 
-.label {
+.label-code {
     color: #ff9800;
 }
 
-.register {
-    color: #9c27b0;
+.jump-code {
+    color: #4caf50;
 }
 
-.active-line .comment {
-    color: #ddd;
+.command-code {
+    color: #2196f3;
+}
+
+.register-code {
+    color: #9c27b0;
 }

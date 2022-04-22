@@ -1,51 +1,7 @@
-const START_LABEL = 'start'
-
-const ZERO_FLAG = 'Z'
-const CARRY_FLAG = 'C'
-
-const INC_CMD = 'INC'
-const DEC_CMD = 'DEC'
-
-const ADD_CMD = 'ADD'
-const SUB_CMD = 'SUB'
-const CMP_CMD = 'CMP'
-
-const AND_CMD = 'AND'
-const OR_CMD = 'OR'
-const XOR_CMD = 'XOR'
-const NOT_CMD = 'NOT'
-
-const SHL_CMD = 'SHL'
-const SHR_CMD = 'SHR'
-
-const MOV_CMD = 'MOV'
-
-const PUSH_CMD = 'PUSH'
-const POP_CMD = 'POP'
-
-const JMP_CMD = 'JMP'
-
-const JZ_CMD = 'JZ'
-const JNZ_CMD = 'JNZ'
-
-const JC_CMD = 'JC'
-const JNC_CMD = 'JNC'
-
-const JA_CMD = 'JA' // > (no carry and no zero)
-const JAE_CMD = 'JAE' // >= (no carry)
-const JB_CMD = 'JB' // < (carry)
-const JBE_CMD = 'JBE' // <= (carry or zero)
-const JE_CMD = 'JE' // == (zero)
-const JNE_CMD = 'JNE' // != (not zero)
-
-const JNA_CMD = 'JNA' // not >
-const JNAE_CMD = 'JNAE' // not >=
-const JNB_CMD = 'JNB' // not <
-const JNBE_CMD = 'JNBE' // not <=
-
 function CpuSimulator(commandMachine, stackMachine, n_bits = 8) {
     this.commandMachine = commandMachine
     this.stackMachine = stackMachine
+    this.highlighter = new SyntaxHighlighter('code-box', 'code-highlight-box')
     this.n_bits = n_bits
 
     this.InitButtons()
@@ -82,75 +38,17 @@ CpuSimulator.prototype.RemoveComments = function(line) {
     return line
 }
 
-CpuSimulator.prototype.SpanLine = function(line, templates) {
-    let intervals = []
-
-    for (let template of templates) {
-        for (let match of line.matchAll(template.regex)) {
-            console.log(match)
-            let start = match.index
-            let end = start + match[0].length
-            intervals.push({start: start, end: end, len: end - start, name: template.name})
-        }
-    }
-
-    intervals.sort((a, b) => a.start - b.start)
-
-    let prev = null
-    let filtered = []
-
-    for (let interval of intervals) {
-        if (prev && interval.start < prev.end)
-            continue
-
-        filtered.push(interval)
-        prev = interval
-    }
-
-    filtered.sort((a, b) => b.start - a.start)
-
-    for (let interval of filtered) {
-        let before = line.substr(0, interval.start)
-        let inside = line.substr(interval.start, interval.len)
-        let after = line.substr(interval.end)
-        line = `${before}<span class="${interval.name}">${inside}</span>${after}`
-    }
-
-    return line
-}
-
-CpuSimulator.prototype.LineToDiv = function(line) {
-    let div = document.createElement('div')
-    div.className = 'code-line'
-
-    // line = this.SpanLine(line, [
-    //     {regex: /;.*/gi, name: "comment"},
-    //     {regex: /\b(\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\da-fA-F]+)\b/gi, name: "number"},
-    //     {regex: /^ *[.\w]\w+:/gi, name: "label"},
-    //     {regex: /\b(?:A|B|C|D|IP|SP)\b/gi, name: "register"}
-    // ])
-
-    div.innerHTML = this.IsWhiteSpace(line) ? '<br>' : line
-
-    return div
-}
-
 CpuSimulator.prototype.CompileProgram = function() {
-    let codeBox = document.getElementById('code-box')
-    let text = this.ClearText(codeBox.innerHTML)
-    let lines = text.split('\n')
+    let lines = this.highlighter.GetTextLines()
 
+    this.highlighter.Highlight()
     this.programIndex = 0
     this.program = []
     this.htmlLines = []
     this.labels = {}
 
-    codeBox.innerHTML = ''
-
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i]
-        let div = this.LineToDiv(line)
-        codeBox.appendChild(div)
 
         if (this.IsComment(line) || this.IsWhiteSpace(line))
             continue
@@ -161,7 +59,7 @@ CpuSimulator.prototype.CompileProgram = function() {
             this.labels[line.substr(0, line.length - 1)] = this.program.length
         }
         else {
-            this.program.push({ line: line, block: div })
+            this.program.push({ line: line, block: document.getElementById(`code-line-${i}`) })
         }
     }
 }

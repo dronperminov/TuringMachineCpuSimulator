@@ -21,6 +21,7 @@
         <div class="code">
             <div class="header">Программа на ассемблере</div>
             <div class="code-area">
+            <div class="code-input-highlight" id="code-highlight-box"></div>
             <div class="code-input" id="code-box" contenteditable="true">JMP start
 
 .loop:
@@ -43,9 +44,9 @@ start:
 end:
     XOR A B
     </div>
-                <div class="code-buttons">
-                    <input type="submit" class="button" value="Компилировать", onclick="simulator.CompileProgram()">
-                </div>
+            </div>
+            <div class="code-buttons">
+                <input type="submit" class="button" value="Компилировать", onclick="simulator.CompileProgram()">
             </div>
         </div>
         <div class="left-footer"></div>
@@ -60,6 +61,8 @@ end:
         <div class="right-footer"></div>
     </div>
 
+    <script src="js/constants.js"></script>
+    <script src="js/highlight.js"></script>
     <script src="js/tape.js"></script>
     <script src="js/turing_machine.js"></script>
     <script src="js/command_machine.js"></script>
