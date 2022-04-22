@@ -13,29 +13,114 @@ function CpuSimulator(commandMachine, stackMachine, n_bits = 8) {
     window.requestAnimationFrame(() => this.Run())
 }
 
-CpuSimulator.prototype.IsWhiteSpace = function(line) {
-    return line.match(/^\s*$/gi) != null
-}
-
-CpuSimulator.prototype.IsComment = function(line) {
-    return line.match(/^ *;.*/gi) != null
-}
-
-CpuSimulator.prototype.ClearText = function(text) {
-    text = text.replace(/<(div|span).*?>/gi, "")
-    text = text.replace(/<\/div>/gi, "\n")
-    text = text.replace(/<\/span>/gi, "")
-    text = text.replace(/<br\/?>/gi, "")
-    text = text.replace(/\s+$/gi, "")
-
-    return text
-}
-
-CpuSimulator.prototype.RemoveComments = function(line) {
+CpuSimulator.prototype.ClearLine = function(line) {
     line = line.replace(/;.*/gi, "")
     line = line.replace(/^ +/gi, "")
     line = line.replace(/ +$/gi, "")
     return line
+}
+
+CpuSimulator.prototype.CompileError = function(block, error) {
+    block.classList.add('error-line')
+    throw error
+}
+
+CpuSimulator.prototype.ParseLabel = function(line, block) {
+    let parts = line.split(':')
+    let label = parts[0]
+
+    if (label.match(/^[.a-zA-Z]\w*$/g) == null)
+        this.CompileError(block, `Некорректная метка ("${label}")`)
+
+    this.labels[label] = this.program.length
+    return parts.length == 1 ? '' : this.ClearLine(parts[1])
+}
+
+CpuSimulator.prototype.ValidateCommand = function(command, args, block) {
+    if ([INC_CMD, DEC_CMD, NOT_CMD, POP_CMD].indexOf(command) > -1) {
+        if (args.length != 1)
+            this.CompileError(block, `Команда "${command}" принимает только один аргумент, а получено ${args.length}`)
+
+        if (!this.IsRegister(args[0]))
+            this.CompileError(block, `Команда "${command}" выполнима только на регистре, а вызвана от "${args[0]}"`)
+    }
+    else if ([ADD_CMD, SUB_CMD, CMP_CMD, AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD].indexOf(command) > -1) {
+        if (args.length != 2)
+            this.CompileError(block, `Команда "${command}" принимает два аргумента, а получено ${args.length}`)
+
+        if (!this.IsRegister(args[0]))
+            this.CompileError(block, `Команда "${command}" первый аргументом принимает регистр, а получено "${args[0]}"`)
+
+        if (!this.IsRegister(args[1]) && !this.IsConstant(args[1]))
+            this.CompileError(block, `Команда "${command}" вторым аргументом принимает регистр или константу, а получено "${args[1]}"`)
+    }
+    else if (command == PUSH_CMD) {
+        if (args.length != 1)
+            this.CompileError(block, `Команда "${command}" принимает только один аргумент, а получено ${args.length}`)
+
+        if (!this.IsRegister(args[1]) && !this.IsConstant(args[1]))
+            this.CompileError(block, `Команда "${command}" принимает регистр или константу, а получено "${args[0]}"`)
+    }
+    else if (command == MOV_CMD) { // TODO: memory
+        if (args.length != 2)
+            this.CompileError(block, `Команда "${command}" принимает два аргумента, а получено ${args.length}`)
+
+        if (!this.IsRegister(args[0]))
+            this.CompileError(block, `Команда "${command}" первый аргументом принимает регистр, а получено "${args[0]}"`)
+
+        if (!this.IsRegister(args[1]) && !this.IsConstant(args[1]))
+            this.CompileError(block, `Команда "${command}" вторым аргументом принимает регистр или константу, а получено "${args[1]}"`)
+    }
+}
+
+CpuSimulator.prototype.ValidateJumps = function() {
+    for (let instruction of this.program) {
+        let command = instruction.command
+        let args = instruction.args
+        let block = instruction.block
+
+        if (JUMP_COMMANDS.indexOf(command) == -1)
+            continue
+
+        if (args.length != 1)
+            this.CompileError(block, `Команда "${command}" принимает только один аргумент, а получено ${args.length}`)
+
+        let label = args[0]
+
+        if (!(label in this.labels))
+            this.CompileError(block, `Метка "${label}" не обнаружена`)
+    }
+}
+
+CpuSimulator.prototype.ParseLine = function(line, index) {
+    line = this.ClearLine(line)
+
+    let block = document.getElementById(`code-line-${index}`)
+
+    if (line.match(/^.*:.*$/gi) != null)
+        line = this.ParseLabel(line, block)
+
+    if (line == "")
+        return
+
+    let parts = line.split(/ +/g)
+    let command = parts[0]
+
+    if (ALL_COMMANDS.indexOf(command) == -1)
+        this.CompileError(block, `Неизвестная команда "${command}"`)
+
+    parts.shift()
+    let args = parts.join(' ').split(/, */g)
+
+    if (args.length == 1 && args[0] == '')
+        args.pop()
+
+    if (args.length == 1 && parts.length > 1)
+        this.CompileError(block, "Аргументы должны разделяться запятыми")
+
+    this.ValidateCommand(command, args, block)
+
+    this.program.push({ command: command, args: args, block: block })
 }
 
 CpuSimulator.prototype.CompileProgram = function() {
@@ -47,20 +132,17 @@ CpuSimulator.prototype.CompileProgram = function() {
     this.htmlLines = []
     this.labels = {}
 
-    for (let i = 0; i < lines.length; i++) {
-        let line = lines[i]
+    this.DisableRunButtons(true, true)
 
-        if (this.IsComment(line) || this.IsWhiteSpace(line))
-            continue
+    try {
+        for (let i = 0; i < lines.length; i++)
+            this.ParseLine(lines[i], i)
 
-        line = this.RemoveComments(line)
-
-        if (line.endsWith(':')) {
-            this.labels[line.substr(0, line.length - 1)] = this.program.length
-        }
-        else {
-            this.program.push({ line: line, block: document.getElementById(`code-line-${i}`) })
-        }
+        this.ValidateJumps()
+        this.DisableRunButtons(false, true)
+    }
+    catch (error) {
+        alert(error)
     }
 }
 
@@ -116,6 +198,10 @@ CpuSimulator.prototype.PrintInfo = function() {
 
 CpuSimulator.prototype.IsRegister = function(arg) {
     return Object.keys(this.registers).indexOf(arg) > -1
+}
+
+CpuSimulator.prototype.IsConstant = function(arg) {
+    return arg.match(/^(\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\da-fA-F]+)$/g) != null
 }
 
 CpuSimulator.prototype.ProcessJump = function(jmp, label) {
@@ -191,49 +277,41 @@ CpuSimulator.prototype.ProcessMov = function(arg1, arg2) {
     this.registers[arg1].SetValue(value)
 }
 
-CpuSimulator.prototype.ProcessCommand = function(command) {
+CpuSimulator.prototype.ProcessCommand = function(instruction) {
     this.HideAllLines()
-    command.block.classList.toggle('active-line')
+    instruction.block.classList.toggle('active-line')
 
-    let commandLine = command.line
-    let args = commandLine.split(' ')
-    let cmd = args[0]
+    let args = instruction.args
+    let cmd = instruction.command
 
-    if (cmd == INC_CMD || cmd == DEC_CMD) {
-        let arg = this.registers[args[1]].GetValue()
+    if (cmd == INC_CMD || cmd == DEC_CMD || cmd == NOT_CMD) {
+        let arg = this.registers[args[0]].GetValue()
         this.commandMachine.InitProgram(arg, cmd)
         this.isTuringRun = true
-        this.resultOperand = this.registers[args[1]]
+        this.resultOperand = this.registers[args[0]]
         this.machine = this.commandMachine
     }
-    else if ([ADD_CMD, SUB_CMD, SUB_CMD, AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD].indexOf(cmd) > -1) {
-        let arg1 = this.registers[args[1]].GetValue()
-        let arg2 = this.GetArgumentValue(args[2])
+    else if ([ADD_CMD, SUB_CMD, AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD].indexOf(cmd) > -1) {
+        let arg1 = this.registers[args[0]].GetValue()
+        let arg2 = this.GetArgumentValue(args[1])
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, cmd)
         this.isTuringRun = true
-        this.resultOperand = this.registers[args[1]]
+        this.resultOperand = this.registers[args[0]]
         this.machine = this.commandMachine
     }
     else if (cmd == CMP_CMD) {
-        let arg1 = this.registers[args[1]].GetValue()
-        let arg2 = this.GetArgumentValue(args[2])
+        let arg1 = this.registers[args[0]].GetValue()
+        let arg2 = this.GetArgumentValue(args[1])
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, SUB_CMD)
         this.isTuringRun = true
         this.resultOperand = null
         this.machine = this.commandMachine
     }
-    else if (cmd == NOT_CMD) {
-        let arg = this.registers[args[1]].GetValue()
-        this.commandMachine.InitProgram(arg, cmd)
-        this.isTuringRun = true
-        this.resultOperand = this.registers[args[1]]
-        this.machine = this.commandMachine
-    }
     else if (cmd == MOV_CMD) {
-        this.ProcessMov(args[1], args[2])
+        this.ProcessMov(args[0], args[1])
     }
     else if (cmd == PUSH_CMD) {
-        let arg = this.GetArgumentValue(args[1])
+        let arg = this.GetArgumentValue(args[0])
         this.stackMachine.InitProgram('', cmd)
         this.isTuringRun = true
         this.resultOperand = arg
@@ -243,11 +321,11 @@ CpuSimulator.prototype.ProcessCommand = function(command) {
         this.popResult = this.stackMachine.GetWord()
         this.stackMachine.InitProgram('', cmd)
         this.isTuringRun = true
-        this.resultOperand = this.registers[args[1]]
+        this.resultOperand = this.registers[args[0]]
         this.machine = this.stackMachine
     }
     else if (cmd.startsWith('J')) {
-        this.ProcessJump(cmd, args[1])
+        this.ProcessJump(cmd, args[0])
     }
     else {
         throw `command "${commandLine}" not implemented`
@@ -296,16 +374,22 @@ CpuSimulator.prototype.IsCarry = function(value) {
     return value.length > this.n_bits
 }
 
-CpuSimulator.prototype.DisableRunButtons = function(disable = true) {
+CpuSimulator.prototype.DisableRunButtons = function(disable = true, disableReset = false) {
     if (disable) {
         this.stepBtn.setAttribute('disabled', '')
         this.stepOperationBtn.setAttribute('disabled', '')
         this.startStopBtn.setAttribute('disabled', '')
+
+        if (disableReset)
+            this.resetBtn.setAttribute('disabled', '')
     }
     else {
         this.stepBtn.removeAttribute('disabled')
         this.stepOperationBtn.removeAttribute('disabled')
         this.startStopBtn.removeAttribute('disabled')
+
+        if (disableReset)
+            this.resetBtn.removeAttribute('disabled')
     }
 }
 
@@ -362,7 +446,6 @@ CpuSimulator.prototype.Step = function(skipTuring = false) {
     if (this.programIndex >= this.program.length && !this.isTuringRun) {
         this.Stop()
         this.DisableRunButtons()
-        this.program[this.programIndex - 1].block.classList.remove('active-line')
         return
     }
 

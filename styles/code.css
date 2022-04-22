@@ -6,7 +6,7 @@
 
 .code-input {
     font-family: Consolas;
-    width: 100%;
+    width: fit-content;
     resize: none;
     border: none;
     white-space: pre;
@@ -19,6 +19,7 @@
 
 .code-input-highlight {
     position: absolute;
+    width: fit-content;
     top: 0;
     bottom: 0;
     left: 0;
@@ -30,12 +31,14 @@
 
 .code-line {
     font-family: Consolas;
-    width: fit-content;
 }
 
 .active-line {
     background: #defee6;
-    width: auto;
+}
+
+.error-line {
+    background: #ffcccc;
 }
 
 .comment-code {

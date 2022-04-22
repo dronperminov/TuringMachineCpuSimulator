@@ -25,28 +25,28 @@
             <div class="code-input" id="code-box" contenteditable="true">JMP start
 
 .loop:
-    MOV D B ; сохраним предыдущий член последовательности
-    ADD B C ; найдём новый
-    MOV C D ; вернём старый на место предыдущего
+    MOV D, B ; сохраним предыдущий член последовательности
+    ADD B, C ; найдём новый
+    MOV C, D ; вернём старый на место предыдущего
     DEC A   ; уменьшим номер
     JNZ .loop
 
     JMP end
 
 start:
-    MOV A 11  ; номер числа Фибоначчи
-    MOV C 0x1
-    CMP A 12
-    CMP A 11
-    CMP A 10
+    MOV A, 11  ; номер числа Фибоначчи
+    MOV C, 0x1
+    CMP A, 12
+    CMP A, 11
+    CMP A, 10
     JMP .loop
 
 end:
-    XOR A B
+    XOR A, B
     </div>
             </div>
             <div class="code-buttons">
-                <input type="submit" class="button" value="Компилировать", onclick="simulator.CompileProgram()">
+                <input type="submit" class="button" value="Компилировать", onclick="simulator.Reset(); simulator.CompileProgram()">
             </div>
         </div>
         <div class="left-footer"></div>

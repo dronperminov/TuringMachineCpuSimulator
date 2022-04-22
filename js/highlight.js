@@ -8,7 +8,7 @@ function SyntaxHighlighter(editableId, highlightId) {
     this.highlightRules = [
         {regex: /;.*/gi, name: "comment-code"},
         {regex: /\b(\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\da-fA-F]+)\b/g, name: "number-code"},
-        {regex: /^ *[.\w]\w+:/gi, name: "label-code"},
+        {regex: /^ *[.a-zA-Z]\w*:/gi, name: "label-code"},
         {regex: new RegExp(`\\b(${REGISTER_NAMES.join('|')})\\b`, "g"), name: "register-code"},
         {regex: new RegExp(`\\b(${JUMP_COMMANDS.join('|')})\\b`, "g"), name: "jump-code"},
         {regex: new RegExp(`\\b(${MAIN_COMMANDS.join('|')})\\b`, "g"), name: "command-code"}
