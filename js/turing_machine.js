@@ -8,6 +8,8 @@ function TuringMachine(boxId, header) {
     this.machineBox = document.getElementById(boxId)
     this.header = header
     this.alphabet = new Set()
+
+    window.addEventListener('resize', () => this.ToHTML())
 }
 
 TuringMachine.prototype.AddState = function(stateName, state) {
