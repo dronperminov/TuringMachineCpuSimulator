@@ -17,6 +17,7 @@
             <input type="submit" class="button" value="Шаг" id="step-btn">
             <input type="submit" class="button" value="Шаг операции" id="step-operation-btn">
             <input type="submit" class="button" value="Сброс" id="reset-btn" >
+            <input type="submit" class="button" value="Компилировать", onclick="simulator.Reset(); simulator.CompileProgram()">
         </div>
         <div class="code">
             <div class="header">Программа на ассемблере</div>
@@ -44,9 +45,6 @@ start:
 end:
     XOR A, B
     </div>
-            </div>
-            <div class="code-buttons">
-                <input type="submit" class="button" value="Компилировать", onclick="simulator.Reset(); simulator.CompileProgram()">
             </div>
         </div>
         <div class="left-footer"></div>

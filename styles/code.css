@@ -1,5 +1,6 @@
 .code-area {
     width: 100%;
+    height: calc(100% - 40px);
     position: relative;
     overflow: auto;
 }
@@ -7,6 +8,7 @@
 .code-input {
     font-family: Consolas;
     width: fit-content;
+    height: 100%;
     resize: none;
     border: none;
     white-space: pre;
