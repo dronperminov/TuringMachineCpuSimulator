@@ -75,7 +75,7 @@
 * Сложение: `ADD reg, arg`
 * Вычитание: `SUB reg, arg`
 * Умножение: `MUL reg, arg`
-* Инкремент: `DEC reg`
+* Инкремент: `INC reg`
 * Декремент: `DEC reg`
 
 ## Логические операции
@@ -130,9 +130,6 @@ JMP start
 start:
     MOV A, 11  ; номер числа Фибоначчи
     MOV C, 0x1
-    CMP A, 12
-    CMP A, 11
-    CMP A, 10
     JMP .loop
 
 end:
