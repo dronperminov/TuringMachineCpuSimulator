@@ -16,7 +16,7 @@ body, head {
     height: 100vh;
 
     grid-template-columns: max(540px, 30%) auto;
-    grid-template-rows: 50px auto 20px;
+    grid-template-rows: 50px auto 30px;
 
     grid-template-areas:
     "left-header right-header"
@@ -47,6 +47,17 @@ body, head {
 .left-footer {
     grid-area: left-footer;
     background: #ddd;
+    display: table;
+    padding: 0 5px;
+}
+
+.footer-cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.footer-cell a {
+    color: #2196f3;
 }
 
 .right-header {

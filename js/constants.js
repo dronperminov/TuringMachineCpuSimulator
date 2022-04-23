@@ -1,7 +1,7 @@
 const START_LABEL = 'start'
 
-const ZERO_FLAG = 'Z'
-const CARRY_FLAG = 'C'
+const ZERO_FLAG = 'ZF'
+const CARRY_FLAG = 'CF'
 
 const INC_CMD = 'INC'
 const DEC_CMD = 'DEC'

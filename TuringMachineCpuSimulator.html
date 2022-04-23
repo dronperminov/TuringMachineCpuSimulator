@@ -23,13 +23,18 @@
             <div class="header">Программа на ассемблере</div>
             <div class="code-area">
             <div class="code-input-highlight" id="code-highlight-box"></div>
-            <textarea class="code-input" id="code-box">JMP start
+            <textarea class="code-input" id="code-box">
+; Симулятор процессора на машинах Тьюринга
+; https://github.com/dronperminov/TuringMachineCpuSimulator
+; Пример вычисления числа фибоначчи по номеру в регистре A
+
+JMP start
 
 .loop:
-    PUSH B ; сохраним предыдущий член последовательности
-    ADD B, C ; найдём новый
-    POP C ; вернём старый на место предыдущего
-    DEC A   ; уменьшим номер
+    PUSH B ; сохраняем предыдущий член последовательности
+    ADD B, C ; вычисляем новый
+    POP C ; возвращаем сохранённый на место предыдущего
+    DEC A   ; уменьшаем номер
     JNZ .loop
 
     JMP end
@@ -46,7 +51,11 @@ end:
     XOR A, B</textarea>
             </div>
         </div>
-        <div class="left-footer"></div>
+        <div class="left-footer">
+            <div class="footer-cell">
+                <a href="https://github.com/dronperminov/TuringMachineCpuSimulator#readme" target="_blank">Инструкция</a>
+            </div>
+        </div>
 
         <div class="right-header"></div>
         <div class="view">
