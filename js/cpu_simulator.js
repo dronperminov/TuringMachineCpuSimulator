@@ -58,7 +58,7 @@ CpuSimulator.prototype.ValidateCommand = function(command, args, block) {
         if (args.length != 1)
             this.CompileError(block, `Команда "${command}" принимает только один аргумент, а получено ${args.length}`)
 
-        if (!this.IsRegister(args[1]) && !this.IsConstant(args[1]))
+        if (!this.IsRegister(args[0]) && !this.IsConstant(args[0]))
             this.CompileError(block, `Команда "${command}" принимает регистр или константу, а получено "${args[0]}"`)
     }
     else if (command == MOV_CMD) { // TODO: memory
