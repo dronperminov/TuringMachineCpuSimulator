@@ -295,32 +295,30 @@ CpuSimulator.prototype.GetArgumentValue = function(arg) {
 }
 
 CpuSimulator.prototype.ProcessMov = function(arg1, arg2) {
-    // from memory to register
+    if (this.IsRegister(arg1) && this.IsRegisterOrConstant(arg2)) {
+        let value = this.GetArgumentValue(arg2)
+        this.registers[arg1].SetValue(value)
+        return
+    }
+
+    this.isTuringRun = true
+    this.machine = memoryMachine
+
     if (this.IsRegister(arg1) && this.IsAddress(arg2)) {
         let address = this.AddressToBits(arg2)
         this.memoryMachine.Run("BEGIN")
         this.memoryMachine.WriteWord(address, -1)
-        this.memoryMachine.Run("MOVE")
-        let value = this.memoryMachine.GetWord('#')
-        this.registers[arg1].SetValue(value)
-        this.memoryMachine.state = ''
-        return
+        this.memoryMachine.InitProgram('', "MOVE")
+        this.resultOperand = this.registers[arg1]
     }
-
-    // from register/constant to memory
-    if (this.IsAddress(arg1) && this.IsRegisterOrConstant(arg2)) {
+    else if (this.IsAddress(arg1) && this.IsRegisterOrConstant(arg2)) {
         let value = this.GetArgumentValue(arg2)
         let address = this.AddressToBits(arg1)
         this.memoryMachine.Run("BEGIN")
         this.memoryMachine.WriteWord(address, -1)
-        this.memoryMachine.Run("MOVE")
-        this.memoryMachine.WriteWord(value)
-        this.memoryMachine.state = ''
-        return
+        this.memoryMachine.InitProgram('', "MOVE")
+        this.resultOperand = value
     }
-
-    let value = this.GetArgumentValue(arg2)
-    this.registers[arg1].SetValue(value)
 }
 
 CpuSimulator.prototype.ProcessCommand = function(instruction) {
@@ -448,8 +446,18 @@ CpuSimulator.prototype.HaltByError = function(error) {
     this.DisableRunButtons(true)
 }
 
+CpuSimulator.prototype.EndMemoryTuring = function() {
+    if (this.resultOperand instanceof Register) {
+        this.resultOperand.SetValue(this.memoryMachine.GetWord('#'))
+    }
+    else {
+        this.memoryMachine.WriteWord(this.resultOperand)
+    }
+}
+
 CpuSimulator.prototype.EndTuring = function() {
     this.isTuringRun = false
+    this.machine.state = ''
 
     let result = this.machine.GetWord()
 
@@ -460,12 +468,16 @@ CpuSimulator.prototype.EndTuring = function() {
         }
 
         result = this.popResult
-        this.machine.state = ''
 
         if (result == '') {
             this.HaltByError('Stack underflow!')
             return
         }
+    }
+
+    if (this.machine == this.memoryMachine) {
+        this.EndMemoryTuring()
+        return
     }
 
     this.flags[ZERO_FLAG].SetValue(this.IsZero(result))
