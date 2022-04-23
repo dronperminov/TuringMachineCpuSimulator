@@ -13,6 +13,15 @@ function CpuSimulator(commandMachine, stackMachine, n_bits = 8) {
     window.requestAnimationFrame(() => this.Run())
 }
 
+CpuSimulator.prototype.LoadProgram = function(program) {
+    if (!confirm("Вы уверены, что хотите загрузить пример? Текущая программа будет утеряна"))
+        return
+
+    this.Reset()
+    this.highlighter.SetText(program)
+    this.CompileProgram()
+}
+
 CpuSimulator.prototype.ClearLine = function(line) {
     line = line.replace(/;.*/gi, "")
     line = line.replace(/^ +/gi, "")

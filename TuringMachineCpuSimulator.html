@@ -26,7 +26,7 @@
             <textarea class="code-input" id="code-box">
 ; Симулятор процессора на машинах Тьюринга
 ; https://github.com/dronperminov/TuringMachineCpuSimulator
-; Пример вычисления числа фибоначчи по номеру в регистре A
+; Пример вычисления числа Фибоначчи по номеру в регистре A
 
 JMP start
 
@@ -55,6 +55,10 @@ end:
             <div class="footer-cell">
                 <a href="https://github.com/dronperminov/TuringMachineCpuSimulator#readme" target="_blank">Инструкция</a>
             </div>
+
+            <div class="footer-cell"><a href="#" onclick="simulator.LoadProgram(FIBONACCI_EXAMPLE)">Пример 1</a></div>
+            <div class="footer-cell"><a href="#" onclick="simulator.LoadProgram(KOLLATZ_EXAMPLE)">Пример 2</a></div>
+            <div class="footer-cell"><a href="#" onclick="simulator.LoadProgram(EUCLID_EXAMPLE)">Пример 3</a></div>
         </div>
 
         <div class="right-header"></div>
@@ -67,6 +71,7 @@ end:
         <div class="right-footer"></div>
     </div>
 
+    <script src="js/examples.js"></script>
     <script src="js/constants.js"></script>
     <script src="js/highlight.js"></script>
     <script src="js/tape.js"></script>
