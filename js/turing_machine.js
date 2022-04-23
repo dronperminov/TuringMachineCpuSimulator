@@ -1,6 +1,8 @@
 const HALT = "!"
 const TAPE_CELL_SIZE = 40
 const LAMBDA_CELL = 'λ'
+const LEFT_CELL = '‹'
+const RIGHT_CELL = '›'
 
 function TuringMachine(boxId, header) {
     this.tape = new Tape()
@@ -9,7 +11,7 @@ function TuringMachine(boxId, header) {
     this.header = header
     this.alphabet = new Set()
 
-    window.addEventListener('resize', () => this.ToHTML())
+    window.addEventListener('resize', () => this.Resize())
 }
 
 TuringMachine.prototype.AddState = function(stateName, state) {
@@ -43,6 +45,8 @@ TuringMachine.prototype.InitProgram = function(word, state) {
 
     this.state = state
     this.runCommand = state
+    this.offset = 0
+    this.center = null
 }
 
 TuringMachine.prototype.ParseCommand = function(state, currChar) {
@@ -97,41 +101,60 @@ TuringMachine.prototype.RunFromWord = function(word, state) {
     return this.Run(state)
 }
 
+TuringMachine.prototype.MoveTape = function(step) {
+    this.offset -= step
+    this.ToHTML()
+}
+
 TuringMachine.prototype.MakeTape = function() {
     let tape = document.createElement('div')
     tape.className = 'turing-tape'
 
     let width = this.machineBox.clientWidth
-    let cells = Math.floor(width / TAPE_CELL_SIZE)
+    let cells = Math.floor(width / TAPE_CELL_SIZE) - 2
     let borders = this.tape.GetBorders()
 
-    let center = Math.floor((cells - (borders.right + borders.left)) / 2)
-
-    if (this.tape.index + center >= cells) {
-        center = cells - 1 - this.tape.index
+    if (this.center == null) {
+        this.center = Math.floor((cells - (borders.right + borders.left)) / 2)
     }
 
-    if (this.tape.index + center < 0) {
-        center = -this.tape.index
+    if (this.tape.index + this.center >= cells) {
+        this.center = cells - 1 - this.tape.index
     }
 
-    for (let i = 0; i < cells; i++) {
-        let index = i - center
-        let char = this.tape.GetCharAt(index)
+    if (this.tape.index + this.center < 0) {
+        this.center = -this.tape.index
+    }
 
+    for (let i = 0; i < cells + 2; i++) {
         let cell = document.createElement('div')
         cell.className = 'turing-tape-cell'
-
-        if (this.tape.index == index) {
-            cell.classList.add('turing-tape-current-cell')
-        }
-        else if (char == LAMBDA) {
-            cell.classList.add('turing-tape-lambda-cell')
-        }
-
-        cell.innerHTML = (char == LAMBDA ? LAMBDA_CELL : char)// + `<sub>${index}</sub>`
         cell.style.width = `${TAPE_CELL_SIZE}px`
         cell.style.height = `${TAPE_CELL_SIZE}px`
+
+        if (i == 0) {
+            cell.innerHTML = LEFT_CELL
+            cell.addEventListener('click', () => this.MoveTape(-1))
+            cell.classList.add('turing-tape-move-cell')
+        }
+        else if (i == cells + 1) {
+            cell.innerHTML = RIGHT_CELL
+            cell.addEventListener('click', () => this.MoveTape(1))
+            cell.classList.add('turing-tape-move-cell')
+        }
+        else {
+            let index = i - 1 - this.center + this.offset
+            let char = this.tape.GetCharAt(index)
+
+            if (this.tape.index == index) {
+                cell.classList.add('turing-tape-current-cell')
+            }
+            else if (char == LAMBDA) {
+                cell.classList.add('turing-tape-lambda-cell')
+            }
+
+            cell.innerHTML = (char == LAMBDA ? LAMBDA_CELL : char)
+        }
 
         tape.appendChild(cell)
     }
@@ -231,6 +254,12 @@ TuringMachine.prototype.MakeStates = function() {
     }
 
     this.machineBox.appendChild(states)
+}
+
+TuringMachine.prototype.Resize = function() {
+    this.center = null
+    this.offset = 0
+    this.ToHTML()
 }
 
 TuringMachine.prototype.ToHTML = function() {

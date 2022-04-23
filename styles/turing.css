@@ -26,6 +26,18 @@
     background: #b3e7ff;
 }
 
+.turing-tape-move-cell {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 25px;
+    user-select: none;
+}
+
+.turing-tape-move-cell:hover {
+    color: #fff;
+    background: #ffc107;
+}
+
 .turing-states {
     display: table;
     width: 100%;
