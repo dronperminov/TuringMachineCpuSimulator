@@ -75,6 +75,16 @@ TuringMachine.prototype.ParseCommand = function(state, currChar) {
     return {nextChar, move, nextState}
 }
 
+TuringMachine.prototype.OptimizeCommand = function(state, char, nextChar, move, nextState) {
+    if (state == nextState && char == nextChar)
+        return move
+
+    if (state == nextState)
+        return `${nextChar},${move}`
+
+    return `${nextChar},${move},${nextState}`
+}
+
 TuringMachine.prototype.Step = function() {
     let currChar = this.tape.GetChar()
     let command = this.ParseCommand(this.state, currChar)
@@ -163,7 +173,7 @@ TuringMachine.prototype.MakeTape = function() {
 }
 
 TuringMachine.prototype.MakeNamedRow = function(names, classNames = null) {
-    let row = document.createElement('row')
+    let row = document.createElement('div')
     row.className = 'turing-states-row'
 
     for (let i = 0; i < names.length; i++) {
@@ -200,10 +210,14 @@ TuringMachine.prototype.MakeStateRow = function(state, alphabet) {
     for (let char of alphabet) {
         if (char in this.states[state]) {
             let command = this.ParseCommand(state, char)
+
+            let prevChar = char == LAMBDA ? LAMBDA_CELL : char
             let nextChar = command.nextChar == LAMBDA ? LAMBDA_CELL : command.nextChar
+
+            let prevState = state == HALT ? `q<sub>halt</sub>` : `q<sub>${state}</sub>`
             let nextState = command.nextState == HALT ? `q<sub>halt</sub>` : `q<sub>${command.nextState}</sub>`
 
-            names.push(`${nextChar},${command.move},${nextState}`)
+            names.push(this.OptimizeCommand(prevState, prevChar, nextChar, command.move, nextState))
         }
         else {
             names.push('')
