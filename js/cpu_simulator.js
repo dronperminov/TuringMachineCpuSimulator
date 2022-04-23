@@ -62,15 +62,15 @@ CpuSimulator.prototype.ValidateCommand = function(command, args, block) {
         if (!this.IsRegister(args[0]))
             this.CompileError(block, `Команда "${command}" первый аргументом принимает регистр, а получено "${args[0]}"`)
 
-        if (!this.IsRegisterOrConstant(args[1]))
-            this.CompileError(block, `Команда "${command}" вторым аргументом принимает регистр или константу, а получено "${args[1]}"`)
+        if (!this.IsRegisterConstantOrAddress(args[1]))
+            this.CompileError(block, `Команда "${command}" вторым аргументом принимает регистр, константу или адрес, а получено "${args[1]}"`)
     }
     else if (command == PUSH_CMD) {
         if (args.length != 1)
             this.CompileError(block, `Команда "${command}" принимает только один аргумент, а получено ${args.length}`)
 
-        if (!this.IsRegisterOrConstant(args[0]))
-            this.CompileError(block, `Команда "${command}" принимает регистр или константу, а получено "${args[0]}"`)
+        if (!this.IsRegisterConstantOrAddress(args[0]))
+            this.CompileError(block, `Команда "${command}" принимает регистр, константу или адрес, а получено "${args[0]}"`)
     }
     else if (command == MOV_CMD) {
         if (args.length != 2)
@@ -213,6 +213,10 @@ CpuSimulator.prototype.IsRegisterOrConstant = function(arg) {
     return this.IsRegister(arg) || this.IsConstant(arg)
 }
 
+CpuSimulator.prototype.IsRegisterConstantOrAddress = function(arg) {
+    return this.IsRegister(arg) || this.IsConstant(arg) || this.IsAddress(arg)
+}
+
 CpuSimulator.prototype.IsAddress = function(arg) {
     return arg.startsWith('[') && arg.endsWith(']') && this.IsRegisterOrConstant(arg.substr(1, arg.length - 2))
 }
@@ -291,7 +295,14 @@ CpuSimulator.prototype.GetArgumentValue = function(arg) {
     if (this.IsRegister(arg))
         return this.registers[arg].GetValue()
 
-    return this.ConstantToBits(arg)
+    if (this.IsConstant(arg))
+        return this.ConstantToBits(arg)
+
+    let address = this.AddressToBits(arg)
+    this.memoryMachine.Run("BEGIN")
+    this.memoryMachine.WriteWord(address, -1)
+    this.memoryMachine.Run("MOVE")
+    return this.memoryMachine.GetWord('#')
 }
 
 CpuSimulator.prototype.ProcessMov = function(arg1, arg2) {
