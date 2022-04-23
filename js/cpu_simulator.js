@@ -163,12 +163,8 @@ CpuSimulator.prototype.InitRegisters = function() {
     this.registersBox.innerHTML = '<b>Регистры:</b>'
     this.registers = {}
 
-    this.registers['A'] = new Register('A', this.n_bits, this.registersBox)
-    this.registers['B'] = new Register('B', this.n_bits, this.registersBox)
-    this.registers['C'] = new Register('C', this.n_bits, this.registersBox)
-    this.registers['D'] = new Register('D', this.n_bits, this.registersBox)
-    this.registers['IP'] = new Register('IP', this.n_bits, this.registersBox)
-    this.registers['SP'] = new Register('SP', this.n_bits, this.registersBox)
+    for (let name of REGISTER_NAMES)
+        this.registers[name] = new Register(name, this.n_bits, this.registersBox)
 }
 
 CpuSimulator.prototype.InitFlags = function() {
@@ -178,22 +174,6 @@ CpuSimulator.prototype.InitFlags = function() {
 
     this.flags[ZERO_FLAG] = new Flag(ZERO_FLAG, this.flagsBox)
     this.flags[CARRY_FLAG] = new Flag(CARRY_FLAG, this.flagsBox)
-}
-
-CpuSimulator.prototype.PrintInfo = function() {
-    let registers = []
-    for (let name of Object.keys(this.registers))
-        registers.push(`${name}: ${this.registers[name].GetValue()}`)
-
-    let flags = []
-    for (let name of Object.keys(this.flags))
-        flags.push(`${name}: ${this.flags[name].GetValue()}`)
-
-    console.log('Registers:')
-    console.log(registers.join('\n'))
-    console.log('Flags:')
-    console.log(flags.join('\n'))
-    console.log('')
 }
 
 CpuSimulator.prototype.IsRegister = function(arg) {

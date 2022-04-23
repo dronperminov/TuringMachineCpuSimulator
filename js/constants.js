@@ -44,7 +44,7 @@ const JNAE_CMD = 'JNAE' // not >=
 const JNB_CMD = 'JNB' // not <
 const JNBE_CMD = 'JNBE' // not <=
 
-const REGISTER_NAMES = ['A', 'B', 'C', 'D', 'IP', 'SP']
+const REGISTER_NAMES = ['A', 'B', 'C', 'D', 'E', 'F']
 
 const MAIN_COMMANDS = [
     INC_CMD, DEC_CMD,
