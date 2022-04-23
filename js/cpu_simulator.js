@@ -44,7 +44,7 @@ CpuSimulator.prototype.ValidateCommand = function(command, args, block) {
         if (!this.IsRegister(args[0]))
             this.CompileError(block, `Команда "${command}" выполнима только на регистре, а вызвана от "${args[0]}"`)
     }
-    else if ([ADD_CMD, SUB_CMD, CMP_CMD, AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD].indexOf(command) > -1) {
+    else if ([ADD_CMD, SUB_CMD, CMP_CMD, MUL_CMD, AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD].indexOf(command) > -1) {
         if (args.length != 2)
             this.CompileError(block, `Команда "${command}" принимает два аргумента, а получено ${args.length}`)
 
@@ -291,7 +291,7 @@ CpuSimulator.prototype.ProcessCommand = function(instruction) {
         this.resultOperand = this.registers[args[0]]
         this.machine = this.commandMachine
     }
-    else if ([ADD_CMD, SUB_CMD, AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD].indexOf(cmd) > -1) {
+    else if ([ADD_CMD, SUB_CMD, MUL_CMD, AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD].indexOf(cmd) > -1) {
         let arg1 = this.registers[args[0]].GetValue()
         let arg2 = this.GetArgumentValue(args[1])
         this.commandMachine.InitProgram(`${arg1}#${arg2}`, cmd)

@@ -8,6 +8,7 @@ const DEC_CMD = 'DEC'
 
 const ADD_CMD = 'ADD'
 const SUB_CMD = 'SUB'
+const MUL_CMD = 'MUL'
 const CMP_CMD = 'CMP'
 
 const AND_CMD = 'AND'
@@ -47,7 +48,7 @@ const REGISTER_NAMES = ['A', 'B', 'C', 'D', 'IP', 'SP']
 
 const MAIN_COMMANDS = [
     INC_CMD, DEC_CMD,
-    ADD_CMD, SUB_CMD, CMP_CMD,
+    ADD_CMD, SUB_CMD, CMP_CMD, MUL_CMD,
     AND_CMD, OR_CMD, XOR_CMD, NOT_CMD, SHL_CMD, SHR_CMD,
     MOV_CMD,
     PUSH_CMD, POP_CMD
