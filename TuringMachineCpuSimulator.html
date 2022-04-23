@@ -26,9 +26,9 @@
             <textarea class="code-input" id="code-box">JMP start
 
 .loop:
-    MOV D, B ; сохраним предыдущий член последовательности
+    PUSH B ; сохраним предыдущий член последовательности
     ADD B, C ; найдём новый
-    MOV C, D ; вернём старый на место предыдущего
+    POP C ; вернём старый на место предыдущего
     DEC A   ; уменьшим номер
     JNZ .loop
 
@@ -43,8 +43,7 @@ start:
     JMP .loop
 
 end:
-    XOR A, B
-    </textarea>
+    XOR A, B</textarea>
             </div>
         </div>
         <div class="left-footer"></div>
