@@ -10,6 +10,24 @@
 * Стек в виде машины Тьюринга
 * Исполнительное устройство в виде машины Тьюринга
 
+## Примеры работы
+![анимация работы симулятора](examples/example.gif "Анимация работы симулятора")
+
+<table>
+<tr>
+  <td><img alt="пример 1" src="examples/example1.png" title="Пример 1" /></td>
+  <td><img alt="пример 2" src="examples/example2.png" title="Пример 2" /></td>
+</tr>
+<tr>
+  <td><img alt="пример 3" src="examples/example3.png" title="Пример 1" /></td>
+  <td><img alt="пример 4" src="examples/example4.png" title="Пример 4" /></td>
+</tr>
+<tr>
+  <td><img alt="пример 5" src="examples/example5.png" title="Пример 5" /></td>
+  <td><img alt="пример 6" src="examples/example6.png" title="Пример 6" /></td>
+</tr>
+</table>
+
 ## Синтаксис
 
 * Каждая инструкция располагается на отдельной строке
@@ -84,3 +102,4 @@
 * `JNAE` - переход по не больше или равно (`not >=`)
 * `JNB` - переход по не меньше (`not <`)
 * `JNBE` - переход по не меньше или равно (`not <=`)
+
