@@ -164,6 +164,9 @@ TuringMachine.prototype.MakeTape = function() {
             else if (char == LAMBDA) {
                 cell.classList.add('turing-tape-lambda-cell')
             }
+            else if (char != '0' && char != '1') {
+                cell.classList.add('turing-tape-light-cell')
+            }
 
             cell.innerHTML = (char == LAMBDA ? LAMBDA_CELL : char)
         }

@@ -22,6 +22,14 @@
     color: #ddd;
 }
 
+.turing-tape-light-cell {
+    background: #eee;
+}
+
+.turing-tape-digit-cell {
+    color: #2500ff;
+}
+
 .turing-tape-current-cell {
     background: #b3e7ff;
 }
