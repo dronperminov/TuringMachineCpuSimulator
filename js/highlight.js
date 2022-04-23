@@ -81,5 +81,5 @@ SyntaxHighlighter.prototype.Highlight = function() {
 }
 
 SyntaxHighlighter.prototype.GetTextLines = function() {
-    return this.editableBox.innerText.split('\n')
+    return this.editableBox.value.split('\n')
 }

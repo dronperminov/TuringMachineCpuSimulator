@@ -6,13 +6,13 @@
 }
 
 .code-input {
-    font-family: Consolas;
     resize: none;
     border: none;
     outline: none;
 
     position: relative;
     color: transparent;
+    background: transparent;
     caret-color: black;
 }
 
@@ -31,6 +31,8 @@
     white-space: pre;
     padding: 5px;
     display: table;
+    font-family: Consolas;
+    font-size: 16px;
 }
 
 .code-line {
