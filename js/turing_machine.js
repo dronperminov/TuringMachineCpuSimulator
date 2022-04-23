@@ -10,6 +10,8 @@ function TuringMachine(boxId, header) {
     this.machineBox = document.getElementById(boxId)
     this.header = header
     this.alphabet = new Set()
+    this.offset = 0
+    this.center = null
 
     window.addEventListener('resize', () => this.Resize())
 }
@@ -25,12 +27,12 @@ TuringMachine.prototype.SetWord = function(word) {
     this.tape.SetWord(word)
 }
 
-TuringMachine.prototype.GetWord = function() {
-    return this.tape.GetWord()
+TuringMachine.prototype.GetWord = function(endChar = LAMBDA) {
+    return this.tape.GetWord(endChar)
 }
 
-TuringMachine.prototype.WriteWord = function(word) {
-    this.tape.WriteWord(word)
+TuringMachine.prototype.WriteWord = function(word, dir = 1) {
+    this.tape.WriteWord(word, dir)
 }
 
 TuringMachine.prototype.Clear = function() {

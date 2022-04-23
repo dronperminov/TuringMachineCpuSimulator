@@ -1,8 +1,10 @@
-function CpuSimulator(commandMachine, stackMachine, n_bits = 8) {
+function CpuSimulator(commandMachine, stackMachine, memoryMachine, n_bits = 8, n_memory = 10) {
     this.commandMachine = commandMachine
     this.stackMachine = stackMachine
+    this.memoryMachine = memoryMachine
     this.highlighter = new SyntaxHighlighter('code-box', 'code-highlight-box')
     this.n_bits = n_bits
+    this.n_memory = n_memory
 
     this.InitButtons()
     this.InitRegisters()
@@ -60,25 +62,28 @@ CpuSimulator.prototype.ValidateCommand = function(command, args, block) {
         if (!this.IsRegister(args[0]))
             this.CompileError(block, `Команда "${command}" первый аргументом принимает регистр, а получено "${args[0]}"`)
 
-        if (!this.IsRegister(args[1]) && !this.IsConstant(args[1]))
+        if (!this.IsRegisterOrConstant(args[1]))
             this.CompileError(block, `Команда "${command}" вторым аргументом принимает регистр или константу, а получено "${args[1]}"`)
     }
     else if (command == PUSH_CMD) {
         if (args.length != 1)
             this.CompileError(block, `Команда "${command}" принимает только один аргумент, а получено ${args.length}`)
 
-        if (!this.IsRegister(args[0]) && !this.IsConstant(args[0]))
+        if (!this.IsRegisterOrConstant(args[0]))
             this.CompileError(block, `Команда "${command}" принимает регистр или константу, а получено "${args[0]}"`)
     }
-    else if (command == MOV_CMD) { // TODO: memory
+    else if (command == MOV_CMD) {
         if (args.length != 2)
             this.CompileError(block, `Команда "${command}" принимает два аргумента, а получено ${args.length}`)
 
-        if (!this.IsRegister(args[0]))
-            this.CompileError(block, `Команда "${command}" первый аргументом принимает регистр, а получено "${args[0]}"`)
+        if (!this.IsRegister(args[0]) && !this.IsAddress(args[0]))
+            this.CompileError(block, `Команда "${command}" первым аргументом принимает регистр или адрес, а получено "${args[0]}"`)
 
-        if (!this.IsRegister(args[1]) && !this.IsConstant(args[1]))
-            this.CompileError(block, `Команда "${command}" вторым аргументом принимает регистр или константу, а получено "${args[1]}"`)
+        if (this.IsRegister(args[0]) && !this.IsRegisterOrConstant(args[1]) && !this.IsAddress(args[1]))
+            this.CompileError(block, `Команда "${command} register" вторым аргументом принимает регистр, константу или адрес, а получено "${args[1]}"`)
+
+        if (this.IsAddress(args[0]) && !this.IsRegisterOrConstant(args[1]))
+            this.CompileError(block, `Команда "${command} address" вторым аргументом принимает регистр или константу, а получено "${args[1]}"`)
     }
 }
 
@@ -185,12 +190,31 @@ CpuSimulator.prototype.InitFlags = function() {
     this.flags[CARRY_FLAG] = new Flag(CARRY_FLAG, this.flagsBox)
 }
 
+CpuSimulator.prototype.ResetMemory = function() {
+    let memory = []
+
+    for (let i = 0; i < this.n_memory; i++)
+        memory.push('#' + Array(this.n_bits).fill('0').join(''))
+
+    memory = memory.join('')
+    this.memoryMachine.Clear()
+    this.memoryMachine.SetWord(memory)
+}
+
 CpuSimulator.prototype.IsRegister = function(arg) {
     return Object.keys(this.registers).indexOf(arg) > -1
 }
 
 CpuSimulator.prototype.IsConstant = function(arg) {
     return arg.match(/^(\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\da-fA-F]+)$/g) != null
+}
+
+CpuSimulator.prototype.IsRegisterOrConstant = function(arg) {
+    return this.IsRegister(arg) || this.IsConstant(arg)
+}
+
+CpuSimulator.prototype.IsAddress = function(arg) {
+    return arg.startsWith('[') && arg.endsWith(']') && this.IsRegisterOrConstant(arg.substr(1, arg.length - 2))
 }
 
 CpuSimulator.prototype.ProcessJump = function(jmp, label) {
@@ -254,6 +278,15 @@ CpuSimulator.prototype.ConstantToBits = function(value) {
     return bits.reverse().join('')
 }
 
+CpuSimulator.prototype.AddressToBits = function(arg) {
+    let address = arg.substr(1, arg.length - 2)
+
+    if (this.IsRegister(address))
+        return this.registers[address].GetValue()
+
+    return this.ConstantToBits(address)
+}
+
 CpuSimulator.prototype.GetArgumentValue = function(arg) {
     if (this.IsRegister(arg))
         return this.registers[arg].GetValue()
@@ -262,6 +295,30 @@ CpuSimulator.prototype.GetArgumentValue = function(arg) {
 }
 
 CpuSimulator.prototype.ProcessMov = function(arg1, arg2) {
+    // from memory to register
+    if (this.IsRegister(arg1) && this.IsAddress(arg2)) {
+        let address = this.AddressToBits(arg2)
+        this.memoryMachine.Run("BEGIN")
+        this.memoryMachine.WriteWord(address, -1)
+        this.memoryMachine.Run("MOVE")
+        let value = this.memoryMachine.GetWord('#')
+        this.registers[arg1].SetValue(value)
+        this.memoryMachine.state = ''
+        return
+    }
+
+    // from register/constant to memory
+    if (this.IsAddress(arg1) && this.IsRegisterOrConstant(arg2)) {
+        let value = this.GetArgumentValue(arg2)
+        let address = this.AddressToBits(arg1)
+        this.memoryMachine.Run("BEGIN")
+        this.memoryMachine.WriteWord(address, -1)
+        this.memoryMachine.Run("MOVE")
+        this.memoryMachine.WriteWord(value)
+        this.memoryMachine.state = ''
+        return
+    }
+
     let value = this.GetArgumentValue(arg2)
     this.registers[arg1].SetValue(value)
 }
@@ -329,6 +386,7 @@ CpuSimulator.prototype.HideAllLines = function() {
 CpuSimulator.prototype.UpdateTuringMachines = function() {
     this.commandMachine.ToHTML()
     this.stackMachine.ToHTML()
+    this.memoryMachine.ToHTML()
 }
 
 CpuSimulator.prototype.Reset = function() {
@@ -348,6 +406,7 @@ CpuSimulator.prototype.Reset = function() {
     this.resultOperand = null
     this.commandMachine.Clear()
     this.stackMachine.Clear()
+    this.ResetMemory()
     this.UpdateTuringMachines()
 }
 

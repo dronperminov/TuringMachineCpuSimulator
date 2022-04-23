@@ -56,11 +56,11 @@ Tape.prototype.SetWord = function(word) {
     this.positive.push(LAMBDA)
 }
 
-Tape.prototype.GetWord = function() {
+Tape.prototype.GetWord = function(endChar = LAMBDA) {
     let index = this.index
     let word = []
 
-    for (let c = this.GetChar(); c != LAMBDA; c = this.GetChar()) {
+    for (let c = this.GetChar(); c != endChar && c != LAMBDA; c = this.GetChar()) {
         word.push(c)
         this.Move(MOVE_RIGHT)
     }
@@ -69,9 +69,9 @@ Tape.prototype.GetWord = function() {
     return word.join('')
 }
 
-Tape.prototype.WriteWord = function(word) {
+Tape.prototype.WriteWord = function(word, dir = 1) {
     for (let i = 0; i < word.length; i++) {
-        this.SetCharAt(this.index + i, word[i])
+        this.SetCharAt(this.index + i * dir, word[dir == 1 ? i : word.length - 1 - i])
     }
 }
 

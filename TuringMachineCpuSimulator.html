@@ -67,6 +67,7 @@ end:
             <div class="flags" id="flags-box"></div>
             <div class="machine" id="stack-machine-box"></div>
             <div class="machine" id="machine-box"></div>
+            <div class="machine" id="memory-machine-box"></div>
         </div>
         <div class="right-footer"></div>
     </div>
@@ -75,14 +76,19 @@ end:
     <script src="js/constants.js"></script>
     <script src="js/highlight.js"></script>
     <script src="js/tape.js"></script>
+    <script src="js/register.js"></script>
+    <script src="js/flag.js"></script>
+
     <script src="js/turing_machine.js"></script>
     <script src="js/command_machine.js"></script>
     <script src="js/stack_machine.js"></script>
-    <script src="js/register.js"></script>
-    <script src="js/flag.js"></script>
+    <script src="js/memory_machine.js"></script>
+
     <script src="js/cpu_simulator.js"></script>
     <script>
-        let simulator = new CpuSimulator(commandMachine, stackMachine, 8)
+        let n_bits = 8
+        let n_memory = 50
+        let simulator = new CpuSimulator(commandMachine, stackMachine, memoryMachine, n_bits, n_memory)
     </script>
 </body>
 </html>
