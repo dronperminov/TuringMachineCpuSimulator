@@ -79,7 +79,7 @@ CpuSimulator.prototype.ValidateCommand = function(command, args, block) {
         if (!this.IsRegister(args[0]) && !this.IsAddress(args[0]))
             this.CompileError(block, `Команда "${command}" первым аргументом принимает регистр или адрес, а получено "${args[0]}"`)
 
-        if (this.IsRegister(args[0]) && !this.IsRegisterOrConstant(args[1]) && !this.IsAddress(args[1]))
+        if (this.IsRegister(args[0]) && !this.IsRegisterConstantOrAddress(args[1]))
             this.CompileError(block, `Команда "${command} register" вторым аргументом принимает регистр, константу или адрес, а получено "${args[1]}"`)
 
         if (this.IsAddress(args[0]) && !this.IsRegisterOrConstant(args[1]))
